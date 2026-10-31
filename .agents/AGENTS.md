@@ -29,3 +29,7 @@ When FlowPlan MCP is available or explicitly requested for a multi-step task, re
 For frontend, web, mobile-screen or design-system work, check whether Impeccable is installed at workspace .agent/skills/impeccable/SKILL.md or global ~/.gemini/config/skills/impeccable/SKILL.md. If present, the primary agent should load and follow that upstream skill for design work. APES's .agents/skills/apes-ui-ux-review and apes-ui-ux-reviewer remain the independent review layer. If Impeccable is absent, use APES's existing UI/UX workflow; do not claim Impeccable commands or hooks ran. Do not auto-install it during a task.
 
 Không tự deploy, thay đổi dữ liệu thật, chi tiêu, cấp quyền hoặc xóa dữ liệu khi chưa có xác nhận cụ thể.
+
+## APES 3.0 Workflow Engine
+
+For multi-step work, select a workflow from config/workflows.json and read .agents/skills/apes-workflow-engine/SKILL.md. Use Build-APESPrompt.ps1 for prompt assembly and Manage-APESRun.ps1 for explicit state checkpoints. Advance only after inspected evidence; require explicit human approval at APPROVAL. The ledger is not automatic telemetry. Preserve FlowPlan and Impeccable as optional independent integrations.
