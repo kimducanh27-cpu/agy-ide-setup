@@ -66,9 +66,20 @@ function Test-AgentFile([string]$Path) {
     }
 }
 
-Write-Host 'APES 2.3 deterministic validation' -ForegroundColor Cyan
+Write-Host 'APES 3.0 deterministic validation' -ForegroundColor Cyan
 foreach ($item in @(
     @('README.md','README'),
+    @('config/workflows.json','Workflow catalog'),
+    @('templates/engine/BASE-PROMPT-VI.md','Workflow base prompt'),
+    @('scripts/Build-APESPrompt.ps1','Prompt Builder'),
+    @('scripts/Manage-APESRun.ps1','Run State Manager'),
+    @('docs/PROMPT-WORKFLOW-ENGINE-V3.md','Workflow Engine documentation'),
+    @('templates/prompts/APES-3.0-QUICKSTART-VI.md','Workflow quickstart'),
+    @('templates/prompts/APES-3.0-EXAMPLE-VI.md','Workflow example'),
+    @('.agents/skills/apes-workflow-engine/SKILL.md','Workspace workflow skill'),
+    @('global/skills/apes-workflow-engine/SKILL.md','Global workflow skill'),
+    @('.agents/rules/apes-workflow-engine.md','Workspace workflow rule'),
+    @('global/rules/apes-workflow-engine.md','Global workflow rule'),
     @('START_HERE_FOR_AI_VI.md','AI setup guide'),
     @('NOTICE.md','Attribution notice'),
     @('scripts/Install-APES.ps1','APES installer'),
@@ -100,6 +111,41 @@ foreach ($scriptFile in Get-ChildItem (Join-Path $repoRoot 'scripts') -Filter '*
         Write-Host "FAIL  PowerShell syntax: $($scriptFile.Name)" -ForegroundColor Red
         foreach ($parseError in $parseErrors) { $failures.Add("$($scriptFile.Name): $($parseError.Message)") }
     }
+}
+
+# Validate the workflow catalog and execute a temporary Prompt Builder + state-ledger smoke test.
+try {
+    $catalog = Get-Content -LiteralPath (Join-Path $repoRoot 'config/workflows.json') -Raw | ConvertFrom-Json
+    $workflowIds = @($catalog.workflows | ForEach-Object { $_.id })
+    $expectedWorkflows = @('quick-fix','standard-feature','full-project','deep-research','hard-review')
+    $missingWorkflows = @($expectedWorkflows | Where-Object { $workflowIds -notcontains $_ })
+    $checks++
+    if ($missingWorkflows.Count -eq 0 -and $catalog.schemaVersion -eq 1) { Write-Host 'PASS  Workflow catalog schema and five workflows' -ForegroundColor Green }
+    else { throw "Workflow catalog invalid; missing: $($missingWorkflows -join ', ')" }
+
+    $smokeRoot = Join-Path ([IO.Path]::GetTempPath()) ('apes-engine-' + [guid]::NewGuid().ToString('N'))
+    New-Item -ItemType Directory -Path $smokeRoot -Force | Out-Null
+    $promptPath = Join-Path $smokeRoot 'generated-prompt.md'
+    & (Join-Path $repoRoot 'scripts/Build-APESPrompt.ps1') -Workflow standard-feature -ProjectPath $smokeRoot -Goal 'Validator smoke test' -Mode ManualCheckpoint -OutputPath $promptPath
+    $checks++
+    if ((Test-Path -LiteralPath $promptPath) -and ((Get-Content -LiteralPath $promptPath -Raw) -match 'Validator smoke test')) { Write-Host 'PASS  Prompt Builder smoke test' -ForegroundColor Green }
+    else { throw 'Prompt Builder did not create the expected prompt.' }
+
+    $initOutput = & (Join-Path $repoRoot 'scripts/Manage-APESRun.ps1') -Action Initialize -Workflow standard-feature -ProjectPath $smokeRoot
+    $runLine = @($initOutput | Where-Object { $_ -like 'RUN_ID=*' }) | Select-Object -First 1
+    if (-not $runLine) { throw 'State Manager did not return RUN_ID.' }
+    $runId = $runLine.Substring(7)
+    & (Join-Path $repoRoot 'scripts/Manage-APESRun.ps1') -Action Advance -ProjectPath $smokeRoot -RunId $runId -Stage DISCOVERY -Evidence 'Smoke test evidence'
+    $statePath = Join-Path $smokeRoot ('.apes/runs/' + $runId + '/state.json')
+    $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+    $checks++
+    if ($state.currentStage -eq 'RESEARCH' -and $state.completedStages -contains 'DISCOVERY') { Write-Host 'PASS  Run State transition and evidence checkpoint' -ForegroundColor Green }
+    else { throw 'Run State did not advance to RESEARCH as expected.' }
+} catch {
+    $failures.Add("Workflow Engine smoke test: $($_.Exception.Message)")
+    Write-Host "FAIL  Workflow Engine smoke test: $($_.Exception.Message)" -ForegroundColor Red
+} finally {
+    if ($smokeRoot -and (Test-Path -LiteralPath $smokeRoot)) { Remove-Item -LiteralPath $smokeRoot -Recurse -Force }
 }
 
 $repoRules = @(Get-ChildItem (Join-Path $repoRoot '.agents/rules') -Filter '*.md' -File)
