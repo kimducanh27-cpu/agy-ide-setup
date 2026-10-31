@@ -15,3 +15,7 @@ Dùng APES như bộ nguyên tắc kỹ nghệ chung trên máy; tôn trọng y�
 - Với FlowPlan: kiểm tra list_plans, dùng prefix trạng thái và bằng chứng test, đọc lại card sau cập nhật; không giả định FlowPlan quan sát terminal/subagent tự động.
 - Không tự cài/chạy ứng dụng FlowPlan, không tự clear/remove card và không tự sửa MCP config nếu chưa được yêu cầu.
 - Không tự triển khai production, chi tiêu, tạo cloud resources hoặc thay đổi quyền.
+
+## APES 3.0 Workflow Engine
+
+For multi-step work, select a workflow from config/workflows.json and read the apes-workflow-engine skill. Use Build-APESPrompt.ps1 for prompt assembly and Manage-APESRun.ps1 for explicit state checkpoints. Advance only after inspected evidence; require explicit human approval at APPROVAL. The ledger is not automatic telemetry. Preserve FlowPlan and Impeccable as optional independent integrations.
