@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "APES Evaluation Scorecard",
+  "type": "object",
+  "required": ["verdict", "summary", "criteria", "findings", "evidence", "checks"],
+  "properties": {
+    "verdict": {"enum": ["PASS", "REJECT", "NEEDS_HUMAN_REVIEW"]},
+    "summary": {"type": "string"},
+    "criteria": {"type": "array", "items": {"type": "object", "required": ["criterion", "status"], "properties": {"criterion": {"type": "string"}, "status": {"enum": ["PASS", "FAIL", "PARTIAL", "NOT_RUN"]}, "evidence": {"type": "string"}}}},
+    "findings": {"type": "array", "items": {"type": "object", "required": ["severity", "title", "impact", "recommendation"], "properties": {"severity": {"enum": ["BLOCKER", "HIGH", "MEDIUM", "LOW", "INFO"]}, "title": {"type": "string"}, "file": {"type": "string"}, "line": {"type": "integer"}, "impact": {"type": "string"}, "recommendation": {"type": "string"}}}},
+    "evidence": {"type": "array", "items": {"type": "string"}},
+    "checks": {"type": "array", "items": {"type": "object", "required": ["name", "status"], "properties": {"name": {"type": "string"}, "command": {"type": "string"}, "status": {"enum": ["PASS", "FAIL", "NOT_RUN", "NOT_CONFIGURED"]}, "output_ref": {"type": "string"}}}},
+    "remediation_round": {"type": "integer", "minimum": 0, "maximum": 3},
+    "requires_user_decision": {"type": "boolean"}
+  },
+  "additionalProperties": false
+}

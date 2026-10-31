@@ -1,0 +1,13 @@
+name: Validate APES
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate native metadata and file layout
+        shell: pwsh
+        run: ./scripts/Test-APES.ps1

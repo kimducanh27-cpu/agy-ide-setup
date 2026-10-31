@@ -1,0 +1,9 @@
+# Local backups and temporary output
+*.bak
+*.tmp
+*.log
+.env
+.env.*
+!.env.example
+# Local evaluation artifacts
+.apes-local/
