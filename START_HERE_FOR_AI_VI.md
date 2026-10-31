@@ -1,4 +1,4 @@
-# START HERE — Hướng dẫn cho Antigravity Agent (APES 2.3)
+# START HERE — Hướng dẫn cho Antigravity Agent (APES 3.0)
 
 Người dùng không rành kỹ thuật. Tự thực hiện các bước an toàn bằng terminal/file tools khi có thể; giải thích bằng tiếng Việt, không yêu cầu người dùng tự gõ lệnh nếu không cần.
 
@@ -75,6 +75,20 @@ FlowPlan là bảng tiến độ và feedback, không phải agent thực thi. A
 FlowPlan hiện chưa có status property riêng trong MCP card schema; APES dùng title prefixes [TODO], [DOING], [PASS], [BLOCKED], [REVIEW]. Không dùng remove_card/clear_plan nếu chưa được người dùng cho phép. Nếu MCP sync/readback lỗi, dừng và báo lỗi thay vì tuyên bố board đã cập nhật.
 
 Tài liệu đầy đủ: docs/FLOWPLAN-WINDOWS-INTEGRATION.md. Không thêm config MCP tự động khi cài APES.
+
+## 4C. APES 3.0 Prompt & Workflow Engine
+
+Đọc docs/PROMPT-WORKFLOW-ENGINE-V3.md và .agents/skills/apes-workflow-engine/SKILL.md. Chọn workflow phù hợp; không ép task nhỏ vào full-project.
+
+~~~powershell
+$project = (Get-Location).Path
+& (Join-Path $apes 'scripts\\Build-APESPrompt.ps1') -Workflow standard-feature -ProjectPath $project -Goal "Mô tả mục tiêu" -Mode ManualCheckpoint -OutputPath (Join-Path $project '.apes\\generated\\prompt.md')
+& (Join-Path $apes 'scripts\\Manage-APESRun.ps1') -Action Initialize -Workflow standard-feature -ProjectPath $project
+~~~
+
+Mở prompt được tạo và đưa vào Agent Chat. Giữ RUN_ID để ghi checkpoint. Chỉ Advance khi stage khớp và evidence đã được kiểm tra; tại APPROVAL, phải có xác nhận rõ của người dùng và dùng -ApprovalConfirmed. Dùng Block/Resume khi có blocker. Complete chỉ sau khi đi hết stage list và có audit evidence.
+
+Giới hạn: đây là prompt assembly + explicit state ledger, chưa phải runtime scheduler. Không tự thu thập terminal telemetry, không tự phát hiện tiến độ, không tự đồng bộ FlowPlan và không đảm bảo Antigravity gọi subagents.
 
 ## 5. Xác minh Custom Agents trong Antigravity Desktop
 - Mở Agent side panel → ... → Customizations/Agents.
