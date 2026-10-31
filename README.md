@@ -169,3 +169,34 @@ APES không tự cài MCP server hoặc hooks tuỳ tiện. MCP có thể cần 
 - Không tự deploy production, chi tiêu, tạo cloud resource hoặc thay đổi dữ liệu thật.
 
 Tài liệu: START_HERE_FOR_AI_VI.md · Custom Agents: docs/HARNESS-AGENTS.md · Compatibility: docs/ANTIGRAVITY-COMPATIBILITY.md · Impeccable: docs/IMPECCABLE-INTEGRATION.md · MCP/Hooks: docs/OPTIONAL-INTEGRATIONS.md · Official subagents docs: https://antigravity.google/docs/subagents
+
+
+## APES 3.1 — Runtime Capture (Preview)
+
+APES 3.1 adds an **optional** Windows runtime capture layer using official Antigravity Hooks. It records session lifecycle, model invocation and tool lifecycle metadata to JSONL so a future dashboard can visualize verified activity.
+
+Cài đặt chỉ khi bạn muốn bật ghi log runtime:
+
+~~~powershell
+.\scripts\Install-APESRuntime.ps1
+~~~
+
+Sau đó mở Antigravity → Settings → Customizations → Hooks, kiểm tra `apes-runtime-capture` đang bật. Log được lưu tại:
+
+`%LOCALAPPDATA%\APES\runtime\events-YYYYMMDD.jsonl`
+
+Kiểm tra collector:
+
+~~~powershell
+.\scripts\Test-APESRuntime.ps1
+~~~
+
+Gỡ hook (không xóa log):
+
+~~~powershell
+.\scripts\Remove-APESRuntime.ps1
+~~~
+
+**Quyền riêng tư:** collector không lưu prompt, tool arguments, transcript hoặc nội dung lỗi. Cấu hình hook hiện chỉ ghi metadata; `PreToolUse` trả `allow` để tiếp tục policy mặc định, không tự phê duyệt hành động.
+
+**Giới hạn:** đây chưa phải dashboard trực tiếp. CI chỉ kiểm tra collector; bạn vẫn cần mở Antigravity và xác minh event thật được ghi. Không tuyên bố đã nhận diện subagent riêng nếu payload không cung cấp định danh. Xem [hướng dẫn Runtime Capture tiếng Việt](docs/APES-3.1-RUNTIME-CAPTURE-VI.md) và [tài liệu Hooks chính thức](https://antigravity.google/docs/hooks).
