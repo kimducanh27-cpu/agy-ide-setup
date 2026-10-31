@@ -43,6 +43,56 @@ if ($Action -eq 'Initialize') {
     exit 0
 }
 if ([string]::IsNullOrWhiteSpace($RunId)) { throw "$Action yêu cầu -RunId." }
+if ($RunId -notmatch '^\d{8}T\d{6}Z-[a-f0-9]{8} Join-Path (Join-Path $root $RunId) 'state.json'
+if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Không tìm thấy state: $path" }
+$state = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+$definition = @($catalog.workflows | Where-Object { $_.id -eq $state.workflow }) | Select-Object -First 1
+if ($null -eq $definition) { throw "Workflow definition không còn tồn tại: $($state.workflow)" }
+if ($Action -eq 'Show') { $state | ConvertTo-Json -Depth 12; exit 0 }
+if ($Action -eq 'Resume') {
+    if ($state.status -ne 'BLOCKED') { throw 'Chỉ run BLOCKED mới được Resume.' }
+    if ([string]::IsNullOrWhiteSpace($Reason)) { throw 'Resume yêu cầu -Reason ghi rõ điều kiện blocker đã được xử lý.' }
+    $state.status = 'ACTIVE'; $state.blockedReason = $null
+    Save-State $state $path
+    Write-Output "STATUS=$($state.status)"
+    Write-Output "CURRENT_STAGE=$($state.currentStage)"
+    exit 0
+}
+if ($state.status -eq 'COMPLETE') { throw 'Run đã COMPLETE; không thể sửa state.' }
+if ($Action -ne 'Block' -and $state.status -eq 'BLOCKED') { throw 'Run đang BLOCKED; dùng -Action Resume sau khi blocker được xử lý.' }
+switch ($Action) {
+    'Advance' {
+        if ([string]::IsNullOrWhiteSpace($Stage) -or [string]::IsNullOrWhiteSpace($Evidence)) { throw 'Advance yêu cầu -Stage và -Evidence; evidence không được để trống.' }
+        if ($state.currentStage -ne $Stage) { throw "Stage mismatch: state=$($state.currentStage), requested=$Stage" }
+        if ([int]$state.stageIndex -lt 0 -or [int]$state.stageIndex -ge $definition.stages.Count -or [string]$definition.stages[[int]$state.stageIndex] -ne $Stage) { throw 'Run state stage/index không khớp workflow catalog; từ chối chuyển bước.' }
+        if ($Stage -eq 'APPROVAL' -and -not $ApprovalConfirmed) { throw 'APPROVAL gate cần -ApprovalConfirmed sau khi người dùng đã duyệt rõ ràng.' }
+        $state.completedStages = @($state.completedStages) + @($Stage)
+        $state.checkpoints = @($state.checkpoints) + @([ordered]@{stage=$Stage; evidence=$Evidence; recordedAt=[DateTime]::UtcNow.ToString('o')})
+        $nextIndex = [int]$state.stageIndex + 1
+        if ($nextIndex -lt $definition.stages.Count) {
+            $state.stageIndex = $nextIndex
+            $state.currentStage = [string]$definition.stages[$nextIndex]
+        } else {
+            $state.currentStage = 'READY_TO_COMPLETE'
+        }
+        $state.blockedReason = $null
+    }
+    'Block' {
+        if ([string]::IsNullOrWhiteSpace($Reason)) { throw 'Block yêu cầu -Reason.' }
+        $state.status = 'BLOCKED'; $state.blockedReason = $Reason
+    }
+    'Complete' {
+        if ($state.currentStage -ne 'READY_TO_COMPLETE') { throw 'Chỉ hoàn tất sau khi đã Advance qua toàn bộ stages của workflow.' }
+        if ([string]::IsNullOrWhiteSpace($Evidence)) { throw 'Complete yêu cầu -Evidence (bằng chứng audit cuối).' }
+        $state.status = 'COMPLETE'
+        $state.checkpoints = @($state.checkpoints) + @([ordered]@{stage='FINAL_AUDIT'; evidence=$Evidence; recordedAt=[DateTime]::UtcNow.ToString('o')})
+    }
+}
+Save-State $state $path
+Write-Output "STATE_UPDATED=$path"
+Write-Output "STATUS=$($state.status)"
+Write-Output "CURRENT_STAGE=$($state.currentStage)"
+) { throw 'RunId không đúng định dạng APES; từ chối đường dẫn không an toàn.' }
 $path = Join-Path (Join-Path $root $RunId) 'state.json'
 if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { throw "Không tìm thấy state: $path" }
 $state = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
