@@ -1,12 +1,31 @@
-# APES 2.3 — Antigravity Project Engineering System
+# APES 3.0 — Antigravity Project Engineering System
 
-**Bộ thiết lập Antigravity IDE cho Windows 11 · Tiếng Việt · Native Rules + Skills + Custom Agents · UI/UX + FlowPlan Windows bridge tùy chọn**
+**Bộ thiết lập Antigravity IDE cho Windows 11 · Tiếng Việt · Native Rules + Skills + Custom Agents · Prompt & Workflow Engine · UI/UX + FlowPlan Windows bridge tùy chọn**
 
 APES có ba lớp:
 
 1. **Project Bootstrap:** phân tích yêu cầu, nghiên cứu GitHub/tài liệu chính thức, đề xuất stack, kiến trúc, kế hoạch kiểm thử và sinh cấu hình riêng.
 2. **Engineering Harness:** phân vai chuyên môn, thực thi theo milestone, review độc lập, đánh giá bằng bằng chứng, sửa lỗi có giới hạn và lưu bài học.
 3. **Native Custom Agents:** một Orchestrator có thể chọn làm agent chính và tám worker có thể được gọi như subagents bằng cơ chế native Antigravity.
+
+## APES 3.0 — Prompt & Workflow Engine
+
+APES 3.0 thêm lớp vận hành workflow vào bộ APES hiện có:
+
+- **Workflow Catalog:** Quick Fix, Standard Feature, Full Project, Deep Research, Hard Review.
+- **Prompt Builder:** tạo prompt tiếng Việt theo loại việc, mục tiêu, thư mục dự án và chế độ Auto/ManualCheckpoint.
+- **Run State Ledger:** lưu stage/checkpoint/evidence dưới .apes/runs/; hỗ trợ Advance, Block, Resume, Complete.
+- **Quality gates:** yêu cầu evidence và approval rõ ràng trước khi chuyển gate tương ứng.
+
+Khởi chạy trên Windows PowerShell từ thư mục repo APES:
+
+~~~powershell
+$project = "D:\Projects\MyApp"
+.\scripts\Build-APESPrompt.ps1 -Workflow standard-feature -ProjectPath $project -Goal "Mô tả tính năng" -Mode ManualCheckpoint -OutputPath "$project\.apes\generated\prompt.md"
+.\scripts\Manage-APESRun.ps1 -Action Initialize -Workflow standard-feature -ProjectPath $project
+~~~
+
+Đọc [hướng dẫn engine](docs/PROMPT-WORKFLOW-ENGINE-V3.md) và [prompt nhanh](templates/prompts/APES-3.0-QUICKSTART-VI.md). Prompt Builder chỉ tạo nội dung; người dùng/agent đưa prompt vào Agent Chat. Run State chỉ ghi nhận checkpoint khi được gọi tường minh; không tự quan sát terminal, tự kiểm chứng evidence hoặc điều khiển native subagents.
 
 APES tập trung điều phối vòng đời dự án. Các công cụ chuyên môn bên ngoài như Impeccable được tích hợp theo kiểu tùy chọn, không bị sao chép hoặc khóa phiên bản bên trong APES.
 
@@ -15,7 +34,7 @@ APES tập trung điều phối vòng đời dự án. Các công cụ chuyên m
 1. Mở Antigravity tại thư mục dự án.
 2. Dán prompt sau vào Agent Chat:
 
-> Hãy tự cài APES 2.3 từ https://github.com/kimducanh27-cpu/agy-ide-setup. Đọc START_HERE_FOR_AI_VI.md, kiểm tra installer trước khi chạy, cài Global + Workspace Rules, Skills và cả 9 Custom Agents theo đường dẫn native. Không ghi đè cấu hình cá nhân; backup file APES trùng tên. Chạy validator và smoke test, xác minh Antigravity đã phát hiện apes-orchestrator cùng 8 subagents. Dùng Orchestrator bootstrap dự án bằng tiếng Việt, nghiên cứu GitHub/tài liệu chính thức, tạo brief/architecture/test plan/milestones rồi dừng chờ tôi duyệt trước khi code. Không giả vờ đã gọi subagent nếu IDE không thực sự tạo subagent. Không tự deploy, mua dịch vụ, tạo cloud resource hoặc thay đổi dữ liệu quan trọng.
+> Hãy tự cài APES 3.0 từ https://github.com/kimducanh27-cpu/agy-ide-setup. Đọc START_HERE_FOR_AI_VI.md, kiểm tra installer trước khi chạy, cài Global + Workspace Rules, Skills và cả 9 Custom Agents theo đường dẫn native. Không ghi đè cấu hình cá nhân; backup file APES trùng tên. Chạy validator và smoke test, xác minh Antigravity đã phát hiện apes-orchestrator cùng 8 subagents. Dùng Orchestrator bootstrap dự án bằng tiếng Việt, nghiên cứu GitHub/tài liệu chính thức, tạo brief/architecture/test plan/milestones rồi dừng chờ tôi duyệt trước khi code. Không giả vờ đã gọi subagent nếu IDE không thực sự tạo subagent. Không tự deploy, mua dịch vụ, tạo cloud resource hoặc thay đổi dữ liệu quan trọng.
 
 Bạn không cần tự gõ lệnh PowerShell nếu Agent có terminal/file tools.
 
