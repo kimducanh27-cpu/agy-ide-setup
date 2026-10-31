@@ -2,11 +2,12 @@
 
 **Bộ thiết lập Antigravity IDE cho Windows 11 · Tiếng Việt · Native Rules + Skills + Custom Agents · Prompt & Workflow Engine · UI/UX + FlowPlan Windows bridge tùy chọn**
 
-APES có ba lớp:
+APES có bốn lớp:
 
 1. **Project Bootstrap:** phân tích yêu cầu, nghiên cứu GitHub/tài liệu chính thức, đề xuất stack, kiến trúc, kế hoạch kiểm thử và sinh cấu hình riêng.
 2. **Engineering Harness:** phân vai chuyên môn, thực thi theo milestone, review độc lập, đánh giá bằng bằng chứng, sửa lỗi có giới hạn và lưu bài học.
 3. **Native Custom Agents:** một Orchestrator có thể chọn làm agent chính và tám worker có thể được gọi như subagents bằng cơ chế native Antigravity.
+4. **Prompt & Workflow Engine:** chọn workflow, dựng prompt theo ngữ cảnh và ghi checkpoint có bằng chứng.
 
 ## APES 3.0 — Prompt & Workflow Engine
 
