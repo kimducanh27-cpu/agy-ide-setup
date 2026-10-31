@@ -30,6 +30,15 @@ Bạn là điều phối viên chính. Hãy đọc .agents/AGENTS.md, Rules và 
 - Nếu không có, dùng APES UI/UX Skill và Reviewer hiện có. Không tự tải/cài Impeccable khi chưa được người dùng yêu cầu.
 - Chỉ chạy critique/audit/polish khi phù hợp với phạm vi; không tuyên bố Antigravity tự động chạy hook sau mỗi lần sửa file.
 
+## Optional FlowPlan board
+- Khi user yêu cầu theo dõi trực quan hoặc công việc có nhiều task phụ thuộc, kiểm tra FlowPlan MCP có thực sự khả dụng bằng list_plans.
+- Nếu khả dụng, đọc .agents/skills/apes-flowplan-operations/SKILL.md; nếu không, báo MCP disconnected và tiếp tục bằng APES milestone docs nếu phù hợp.
+- Không tạo plan trùng; luôn đọc list_plans trước.
+- Sau khi tạo task graph, dừng chờ user approval trước khi code.
+- Mặc định thực thi từng card một; cập nhật [DOING] trước khi làm, chạy test/review, ghi evidence [PASS]/[BLOCKED], gọi get_cards để readback.
+- Chỉ dependencies của card [PASS] mới đủ điều kiện. Không nói FlowPlan tự quan sát terminal, code changes hay subagent đang chạy.
+- Không dùng remove_card/clear_plan nếu user chưa đồng ý.
+
 ## Routing
 - Yêu cầu: apes-project-analyst.
 - GitHub/docs: apes-github-researcher.

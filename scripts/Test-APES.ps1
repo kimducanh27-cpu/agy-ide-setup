@@ -66,7 +66,7 @@ function Test-AgentFile([string]$Path) {
     }
 }
 
-Write-Host 'APES 2.2 deterministic validation' -ForegroundColor Cyan
+Write-Host 'APES 2.3 deterministic validation' -ForegroundColor Cyan
 foreach ($item in @(
     @('README.md','README'),
     @('START_HERE_FOR_AI_VI.md','AI setup guide'),
@@ -75,6 +75,14 @@ foreach ($item in @(
     @('scripts/Install-Impeccable.ps1','Optional Impeccable installer'),
     @('scripts/Test-Impeccable.ps1','Optional Impeccable validator'),
     @('docs/IMPECCABLE-INTEGRATION.md','Impeccable integration guide'),
+    @('docs/FLOWPLAN-WINDOWS-INTEGRATION.md','FlowPlan Windows integration guide'),
+    @('templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md','FlowPlan Vietnamese prompt pack'),
+    @('scripts/Install-FlowPlan-MCP.ps1','Optional FlowPlan MCP config helper'),
+    @('scripts/Test-FlowPlan-MCP.ps1','Optional FlowPlan MCP validator'),
+    @('.agents/skills/apes-flowplan-operations/SKILL.md','FlowPlan operations skill'),
+    @('global/skills/apes-flowplan-operations/SKILL.md','Global FlowPlan operations skill'),
+    @('.agents/rules/apes-flowplan-progress.md','Workspace FlowPlan progress rule'),
+    @('global/rules/apes-flowplan-progress.md','Global FlowPlan progress rule'),
     @('global/AGENTS.md','Global instructions'),
     @('.agents/AGENTS.md','Workspace instructions')
 )) { Test-RequiredPath (Join-Path $repoRoot $item[0]) $item[1] }

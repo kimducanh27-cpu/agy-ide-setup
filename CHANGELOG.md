@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.0 — 2026-10-31
+- Add optional FlowPlan Windows operations bridge for Antigravity Desktop over local Streamable HTTP MCP.
+- Add safe Windows MCP config merge helper with loopback-only validation, health preflight, conflict protection and backup.
+- Add FlowPlan config/health validator; extend APES validation to require integration assets and parse the new scripts.
+- Add APES FlowPlan operations skill, progress rule, Windows integration guide and Vietnamese prompt pack for planning, approval, card-by-card execution, QA, readback, recovery and final audit.
+- Formalize card status prefixes because the current FlowPlan MCP schema does not expose a dedicated status field; require evidence-backed PASS and verified readback after each card.
+
+
 ## 2.2.0 — 2026-10-31
 - Add optional Impeccable bridge for UI/frontend workflows without vendoring the upstream project.
 - Add a Windows installer that copies the Antigravity skill from a pinned upstream tag into the correct singular .agent/ workspace path or global Gemini skills directory; backup same-name Impeccable installs before replacement.

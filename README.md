@@ -1,6 +1,6 @@
-# APES 2.2 — Antigravity Project Engineering System
+# APES 2.3 — Antigravity Project Engineering System
 
-**Bộ thiết lập Antigravity IDE cho Windows 11 · Tiếng Việt · Native Rules + Skills + Custom Agents · UI/UX bridge tùy chọn**
+**Bộ thiết lập Antigravity IDE cho Windows 11 · Tiếng Việt · Native Rules + Skills + Custom Agents · UI/UX + FlowPlan Windows bridge tùy chọn**
 
 APES có ba lớp:
 
@@ -15,7 +15,7 @@ APES tập trung điều phối vòng đời dự án. Các công cụ chuyên m
 1. Mở Antigravity tại thư mục dự án.
 2. Dán prompt sau vào Agent Chat:
 
-> Hãy tự cài APES 2.2 từ https://github.com/kimducanh27-cpu/agy-ide-setup. Đọc START_HERE_FOR_AI_VI.md, kiểm tra installer trước khi chạy, cài Global + Workspace Rules, Skills và cả 9 Custom Agents theo đường dẫn native. Không ghi đè cấu hình cá nhân; backup file APES trùng tên. Chạy validator và smoke test, xác minh Antigravity đã phát hiện apes-orchestrator cùng 8 subagents. Dùng Orchestrator bootstrap dự án bằng tiếng Việt, nghiên cứu GitHub/tài liệu chính thức, tạo brief/architecture/test plan/milestones rồi dừng chờ tôi duyệt trước khi code. Không giả vờ đã gọi subagent nếu IDE không thực sự tạo subagent. Không tự deploy, mua dịch vụ, tạo cloud resource hoặc thay đổi dữ liệu quan trọng.
+> Hãy tự cài APES 2.3 từ https://github.com/kimducanh27-cpu/agy-ide-setup. Đọc START_HERE_FOR_AI_VI.md, kiểm tra installer trước khi chạy, cài Global + Workspace Rules, Skills và cả 9 Custom Agents theo đường dẫn native. Không ghi đè cấu hình cá nhân; backup file APES trùng tên. Chạy validator và smoke test, xác minh Antigravity đã phát hiện apes-orchestrator cùng 8 subagents. Dùng Orchestrator bootstrap dự án bằng tiếng Việt, nghiên cứu GitHub/tài liệu chính thức, tạo brief/architecture/test plan/milestones rồi dừng chờ tôi duyệt trước khi code. Không giả vờ đã gọi subagent nếu IDE không thực sự tạo subagent. Không tự deploy, mua dịch vụ, tạo cloud resource hoặc thay đổi dữ liệu quan trọng.
 
 Bạn không cần tự gõ lệnh PowerShell nếu Agent có terminal/file tools.
 
@@ -79,6 +79,28 @@ Tuỳ chọn:
 Sau khi cài, reload Antigravity rồi dùng /impeccable init cho product context mới; với giao diện hiện hữu, có thể dùng /impeccable document, /impeccable critique, /impeccable audit, /impeccable polish hoặc các lệnh phù hợp. APES tự định tuyến tác vụ UI sang Impeccable khi skill đã được cài; backend-only không cần gọi nó.
 
 **Giới hạn:** bản Antigravity được cài bằng skill payload. Không bật lifecycle hook tự động cho Antigravity; không tuyên bố detector tự chạy sau mỗi lần sửa file. Chi tiết: docs/IMPECCABLE-INTEGRATION.md.
+
+## Tích hợp tùy chọn: FlowPlan Windows
+
+Dùng [FlowPlan Windows](https://github.com/kimducanh27-cpu/flowplan-windows) làm bảng task trực quan cho APES. Đây là community build portable, không phải upstream official release; APES không tự tải/cài/chạy ứng dụng.
+
+Khi FlowPlan đang mở, có thể cấu hình MCP an toàn (chỉ loopback, backup và giữ các server khác):
+
+~~~powershell
+.\scripts\Install-FlowPlan-MCP.ps1 -Scope Global
+# hoặc chỉ workspace:
+.\scripts\Install-FlowPlan-MCP.ps1 -Scope Project -ProjectPath (Get-Location).Path
+~~~
+
+Kiểm tra config và local health:
+
+~~~powershell
+.\scripts\Test-FlowPlan-MCP.ps1 -Scope Global
+~~~
+
+Sau đó reload MCP trong Antigravity, mở chat mới và yêu cầu agent gọi list_plans để xác minh kết nối thật.
+
+**Quy trình dùng đúng:** Research → tạo task graph → duyệt → [DOING] → implement → test/review → [PASS] kèm evidence → đọc lại card để xác minh → task tiếp theo. Nếu lỗi hoặc không xác minh được thì [BLOCKED]/[REVIEW] và dừng. FlowPlan hiện không có status field riêng; APES dùng prefix trong title. Xem docs/FLOWPLAN-WINDOWS-INTEGRATION.md và templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md để lấy prompt đầy đủ.
 
 ## Quy trình
 

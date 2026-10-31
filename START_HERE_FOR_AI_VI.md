@@ -1,4 +1,4 @@
-# START HERE — Hướng dẫn cho Antigravity Agent (APES 2.2)
+# START HERE — Hướng dẫn cho Antigravity Agent (APES 2.3)
 
 Người dùng không rành kỹ thuật. Tự thực hiện các bước an toàn bằng terminal/file tools khi có thể; giải thích bằng tiếng Việt, không yêu cầu người dùng tự gõ lệnh nếu không cần.
 
@@ -11,7 +11,7 @@ Repository: https://github.com/kimducanh27-cpu/agy-ide-setup
 - Nếu repo APES đã tồn tại, kiểm tra remote và working tree. Chỉ cập nhật fast-forward khi working tree sạch; nếu không thì dừng và báo.
 
 ## 2. Đọc và kiểm tra trước khi chạy
-Đọc README, LICENSE, NOTICE, compatibility docs, Custom Agents docs, optional integrations, Impeccable integration docs, installer và validator. Xác nhận script không xóa dữ liệu, không cần Administrator, không truy cập secrets và không tải/chạy mã ngoài. Nếu có bất thường, không chạy.
+Đọc README, LICENSE, NOTICE, compatibility docs, Custom Agents docs, optional integrations, Impeccable/FlowPlan integration docs, prompt pack, installers và validators. Xác nhận script không xóa dữ liệu, không cần Administrator, không truy cập secrets và không tải/chạy mã ngoài. Nếu có bất thường, không chạy.
 
 ## 3. Cài APES trên Windows 11
 Chỉ chạy PowerShell trên Windows. Không đổi ExecutionPolicy vĩnh viễn:
@@ -43,6 +43,38 @@ APES không tự tải Impeccable khi cài cơ bản. Nếu người dùng muố
 - Reload IDE. Dùng /impeccable init cho product context, /impeccable document cho design system hiện hữu, và /impeccable critique / audit / polish theo tác vụ.
 
 Nếu không cài Impeccable, APES tiếp tục dùng apes-ui-ux-review skill và Custom Agent apes-ui-ux-reviewer; không được coi Impeccable là thành phần bắt buộc.
+
+## 4B. FlowPlan Windows (tùy chọn, hữu ích cho task nhiều bước)
+
+FlowPlan là bảng tiến độ và feedback, không phải agent thực thi. APES không tự tải/cài/chạy ứng dụng.
+
+1. Tải bản portable Windows từ https://github.com/kimducanh27-cpu/flowplan-windows/releases/latest; đây là community build unsigned, không phải upstream official release. Verify checksum theo docs/FLOWPLAN-WINDOWS-INTEGRATION.md.
+2. Mở FlowPlan.exe, giữ WebView2Loader.dll cùng thư mục.
+3. Khi FlowPlan health tại http://127.0.0.1:3100/health trả ok=true, cấu hình MCP bằng helper:
+
+~~~powershell
+& (Join-Path $apes 'scripts\Install-FlowPlan-MCP.ps1') -Scope Global
+# hoặc chỉ workspace:
+& (Join-Path $apes 'scripts\Install-FlowPlan-MCP.ps1') -Scope Project -ProjectPath (Get-Location).Path
+~~~
+
+4. Kiểm tra config/health:
+
+~~~powershell
+& (Join-Path $apes 'scripts\Test-FlowPlan-MCP.ps1') -Scope Global
+~~~
+
+5. Reload MCP Servers trong Antigravity, mở chat mới, yêu cầu agent gọi list_plans. Chỉ coi là connected sau khi có tool result thật.
+6. Dùng skill apes-flowplan-operations và prompt pack templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md:
+   - Preflight, không ghi dữ liệu.
+   - Plan/research rồi tạo board, dừng chờ DUYỆT KẾ HOẠCH.
+   - Sau approval, làm từng card: [TODO] → [DOING] → implement → test → review → [PASS]/[BLOCKED].
+   - Sau mỗi card cập nhật evidence rồi get_cards đọc lại xác minh.
+   - Chỉ chuyển bước khi card [PASS] và dependencies hợp lệ.
+
+FlowPlan hiện chưa có status property riêng trong MCP card schema; APES dùng title prefixes [TODO], [DOING], [PASS], [BLOCKED], [REVIEW]. Không dùng remove_card/clear_plan nếu chưa được người dùng cho phép. Nếu MCP sync/readback lỗi, dừng và báo lỗi thay vì tuyên bố board đã cập nhật.
+
+Tài liệu đầy đủ: docs/FLOWPLAN-WINDOWS-INTEGRATION.md. Không thêm config MCP tự động khi cài APES.
 
 ## 5. Xác minh Custom Agents trong Antigravity Desktop
 - Mở Agent side panel → ... → Customizations/Agents.
