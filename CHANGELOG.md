@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0 — 2026-10-31
+- Add opt-in Windows Antigravity Hooks runtime capture for session, model invocation, tool lifecycle and stop events.
+- Add privacy-conscious JSONL telemetry that omits prompts, tool arguments, transcripts and error text.
+- Add backup-preserving global Hooks installer, safe removal script and collector smoke test.
+- Document runtime capture limits: event capture is not a live dashboard and subagent identity is not inferred without evidence.
+
 ## 3.0.0 — 2026-10-31
 - Add a workflow catalog for Quick Fix, Standard Feature, Full Project, Deep Research and Hard Review.
 - Add a PowerShell Prompt Builder that assembles Vietnamese prompts from workflow, project, goal and execution mode.
@@ -13,7 +19,6 @@
 - Add FlowPlan config/health validator; extend APES validation to require integration assets and parse the new scripts.
 - Add APES FlowPlan operations skill, progress rule, Windows integration guide and Vietnamese prompt pack for planning, approval, card-by-card execution, QA, readback, recovery and final audit.
 - Formalize card status prefixes because the current FlowPlan MCP schema does not expose a dedicated status field; require evidence-backed PASS and verified readback after each card.
-
 
 ## 2.2.0 — 2026-10-31
 - Add optional Impeccable bridge for UI/frontend workflows without vendoring the upstream project.
