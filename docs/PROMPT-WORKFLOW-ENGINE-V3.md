@@ -38,7 +38,7 @@ Chặn hoặc hoàn tất:
 - Prompt Builder chỉ lắp prompt; không tự thực thi workflow.
 - State Manager ghi checkpoint do người dùng/agent gọi tường minh; không tự phát hiện stage đã hoàn tất.
 - `Advance` yêu cầu stage khớp currentStage và evidence không rỗng. Script không tự xác nhận evidence là đúng; reviewer/agent phải kiểm tra.
-- `NEXT_STAGE_PENDING` là trạng thái chờ điều phối viên cập nhật stage tiếp theo; không giả định script tự suy ra thứ tự stage từ mọi workflow.
+- State Manager đọc catalog để tự chuyển sang stage kế tiếp theo đúng thứ tự; sau stage cuối, state chuyển sang `READY_TO_COMPLETE`.
 - Với FlowPlan, MCP tool calls phải thực sự có sẵn và được readback. Không coi JSON state là đồng bộ tự động với FlowPlan.
 - Approval là human gate: không chuyển qua APPROVAL nếu chưa có xác nhận rõ ràng.
 - Auto mode chỉ tự tiếp tục trong phạm vi đã được duyệt; ManualCheckpoint dừng sau mỗi stage.
