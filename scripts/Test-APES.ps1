@@ -9,7 +9,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $failures = [System.Collections.Generic.List[string]]::new()
 $checks = 0
 $expectedAgentCount = 9
-$knownTools = @('view_file','grep_search','find_by_name','code_search','run_command')
+$knownTools = @('read_file','run_command')
 
 function Test-RequiredPath([string]$Path, [string]$Label) {
     $script:checks++
@@ -84,7 +84,8 @@ foreach ($item in @(
 foreach ($scriptFile in Get-ChildItem (Join-Path $repoRoot 'scripts') -Filter '*.ps1' -File) {
     $tokens = $null
     $parseErrors = $null
-    [System.Management.Automation.Language.Parser]::ParseFile($scriptFile.FullName, [ref]$tokens, [ref]$parseErrors) | Out-Null
+    $scriptContent = [System.IO.File]::ReadAllText($scriptFile.FullName, [System.Text.Encoding]::UTF8)
+    [System.Management.Automation.Language.Parser]::ParseInput($scriptContent, $scriptFile.FullName, [ref]$tokens, [ref]$parseErrors) | Out-Null
     $checks++
     if ($parseErrors.Count -eq 0) {
         Write-Host "PASS  PowerShell syntax: $($scriptFile.Name)" -ForegroundColor Green
@@ -152,4 +153,5 @@ if ($failures.Count -gt 0) {
     foreach ($failure in $failures) { Write-Host " - $failure" -ForegroundColor Red }
     exit 1
 }
-Write-Host 'All deterministic checks passed. This validates metadata, syntax and installation paths, not application quality.' -ForegroundColor Green
+Write-Host 'All deterministic checks passed. This validates metadata, syntax, tool registry match and installation paths.' -ForegroundColor Green
+Write-Host 'NOTE: Runtime native subagent execution (invoke_subagent) requires an active Antigravity Desktop session and cannot be verified solely from external CLI.' -ForegroundColor Yellow

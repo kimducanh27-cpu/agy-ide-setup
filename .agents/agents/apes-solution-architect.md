@@ -7,10 +7,7 @@ subagent: true
 model: pro
 commandExecutionPolicy: sandbox
 tools:
-  - view_file
-  - grep_search
-  - find_by_name
-  - code_search
+  - read_file
 ---
 
 # Solution Architect
