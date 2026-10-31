@@ -5,4 +5,6 @@ description: "Use before starting a new project, selecting a stack, changing arc
 
 # APES Bootstrap Gate
 
-TrÆ°á»›c khi code sáº£n pháº©m trong dá»± Ã¡n má»›i hoáº·c feature lá»›n, pháº£i cOÌ†êŒè‰É¥•˜°…•ÁÑ…¹”É¥Ñ•É¥„°Ñ•¡¹½±½äÉ•Í•…É °…É¡¥Ñ•ÑÕÉ”‘•¥Í¥½¸°ÅÕ…±¥ÑäÁ±…¸°µ¥±•ÍÑ½¹•Ì°É¥Í­ÌÛ€…ÁÁÉ½Ù…°É•½É¸(+™Ô½µÁ±•Ñ”Ñ¡§†êıÔ°¡Õç†î¸Í…¹œ‰½½ÑÍÑÉ…À¸-£Ñ¹œ‰§†êı¸‰Ô£†î=¤¹£†î<¡¿†êİŒÑ¡…äƒG†îU¤Ó¤±§†îÔÑ£¹ ÅÕäÑË±¹ £±¹ Ñ£†î¥Œ­£Ñ¹œ†ê¸Ñ¡§†êıĞ¸9ŸÃ†îu¤“å¹œ‘Õç†îĞ‹†êÅ¹œ³†îu¤ã…Œ¹£†êµ¸ËÔË¹œÑÉ½¹œ¡…Ğì­£Ñ¹œ‰×†îeŒ£†î4Ï†îµ„)M=8¡…ä³†î¹ Ñ•Éµ¥¹…°¸
+TrÆ°á»›c khi code sáº£n pháº©m trong dá»± Ã¡n má»›i hoáº·c feature lá»›n, pháº£i cÃ³: brief, acceptance criteria, technology research, architecture decision, quality plan, milestones, risks vÃ  approval record.
+
+Náº¿u thiáº¿u, chuyá»ƒn sang bootstrap. KhÃ´ng biáº¿n cÃ¢u há»i nhá» hoáº·c thay Ä‘á»•i tÃ i liá»‡u thÃ nh quy trÃ¬nh hÃ¬nh thá»©c khÃ´ng cáº§n thiáº¿t. NgÆ°á»i dÃ¹ng duyá»‡t báº±ng lá»i xÃ¡c nháº­n rÃµ rÃ ng trong chat; khÃ´ng buá»™c há» sá»­a JSON hay lá»‡nh terminal.

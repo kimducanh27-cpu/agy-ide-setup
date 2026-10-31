@@ -5,7 +5,7 @@ Người dùng không rành kỹ thuật. Tự thực hiện các bước an to�
 Repository: https://github.com/kimducanh27-cpu/agy-ide-setup
 
 ## 1. Khảo sát và bảo vệ dữ liệu
-- Xác định OS, shell, workspace root, trạng thái Git, working tree và Antigravity Desktop/CLI surface.
+- Xác định OS, shell, workspace root, trạng thái Git, working tree và Antigravity 2.0 Desktop App / Antigravity IDE / Antigravity CLI surface; xác định chính xác sản phẩm trước khi cài hoặc đọc telemetry.
 - Không reset, clean, checkout, clone đè hoặc xóa file có sẵn.
 - Clone APES vào thư mục công cụ riêng: Windows $env:LOCALAPPDATA\APES\agy-ide-setup.
 - Nếu repo APES đã tồn tại, kiểm tra remote và working tree. Chỉ cập nhật fast-forward khi working tree sạch; nếu không thì dừng và báo.
@@ -90,12 +90,24 @@ Mở prompt được tạo và đưa vào Agent Chat. Giữ RUN_ID để ghi che
 
 Giới hạn: đây là prompt assembly + explicit state ledger, chưa phải runtime scheduler. Không tự thu thập terminal telemetry, không tự phát hiện tiến độ, không tự đồng bộ FlowPlan và không đảm bảo Antigravity gọi subagents.
 
-## 5. Xác minh Custom Agents trong Antigravity Desktop
+## 4D. Antigravity 2.0 Desktop App
+
+Antigravity 2.0 là standalone desktop app, tách biệt với Antigravity IDE và Antigravity CLI. Khi dùng App 2.0:
+- Workspace Custom Agents: `.agents/agents/`; global agents: `~/.gemini/config/agents/`.
+- Workspace Hooks: `.agents/hooks.json`; global Hooks: `~/.gemini/config/hooks.json`.
+- Quản lý Hooks trong Settings → Customizations → Hooks.
+- Transcript data root: `~/.gemini/antigravity/`. IDE dùng `~/.gemini/antigravity-ide/`; CLI dùng `~/.gemini/antigravity-cli/`. Không trộn dữ liệu giữa các surface.
+- Với observer thụ động, không dùng `PreToolUse` vì event này có quyền gating và có thể thay đổi permission flow. `PostToolUse` chạy sau khi tool hoàn tất; chỉ hiển thị tool-completed. Chỉ giữ metadata tối thiểu, không lưu tool arguments hoặc raw error.
+- APES không tự tạo/cài Hooks trong quá trình cài mặc định. Chỉ thêm Hooks cho workspace sau khi người dùng duyệt và review payload/security.
+
+Nguồn chính thức: https://antigravity.google/docs/hooks · https://antigravity.google/blog/introducing-custom-agents
+
+## 5. Xác minh Custom Agents trong Antigravity Desktop App / IDE
 - Mở Agent side panel → ... → Customizations/Agents.
-- Xác minh Orchestrator và 8 worker hiển thị; reload/restart IDE hoặc conversation mới nếu cần.
+- Xác minh Orchestrator và 8 worker hiển thị; reload/reopen đúng Antigravity 2.0 App hoặc IDE đang dùng, hoặc tạo conversation mới nếu cần.
 - Chọn apes-orchestrator làm primary agent nếu muốn.
 - Thử giao task đọc-only cho apes-project-analyst; xác minh subagent thực sự xuất hiện và trả kết quả.
-- Không dùng lệnh CLI-only /agents làm điều kiện bắt buộc cho Desktop IDE.
+- Không dùng lệnh CLI-only `/agents` làm điều kiện bắt buộc cho Desktop App hoặc Desktop IDE.
 - Không tuyên bố subagent đã chạy nếu chỉ mô phỏng role trong cùng context.
 
 ## 6. Project Bootstrap — chưa code sản phẩm

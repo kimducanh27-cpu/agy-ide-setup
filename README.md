@@ -1,6 +1,8 @@
 # APES 3.0 — Antigravity Project Engineering System
 
-**Bộ thiết lập Antigravity IDE cho Windows 11 · Tiếng Việt · Native Rules + Skills + Custom Agents · Prompt & Workflow Engine · UI/UX + FlowPlan Windows bridge tùy chọn**
+**Bộ thiết lập Google Antigravity 2.0 Desktop App và Antigravity IDE trên Windows 11 · Tiếng Việt · Native Rules + Skills + Custom Agents · Prompt & Workflow Engine · UI/UX + FlowPlan Windows bridge tùy chọn**
+
+APES hỗ trợ hai desktop surface riêng biệt: **Antigravity 2.0 Desktop App** (standalone agent command center) và **Antigravity IDE**. Hai surface có thư mục dữ liệu runtime khác nhau; không được nhầm với Antigravity CLI. Xem [bảng tương thích](docs/ANTIGRAVITY-COMPATIBILITY.md).
 
 APES có bốn lớp:
 
@@ -35,7 +37,7 @@ APES tập trung điều phối vòng đời dự án. Các công cụ chuyên m
 1. Mở Antigravity tại thư mục dự án.
 2. Dán prompt sau vào Agent Chat:
 
-> Hãy tự cài APES 3.0 từ https://github.com/kimducanh27-cpu/agy-ide-setup. Đọc START_HERE_FOR_AI_VI.md, kiểm tra installer trước khi chạy, cài Global + Workspace Rules, Skills và cả 9 Custom Agents theo đường dẫn native. Không ghi đè cấu hình cá nhân; backup file APES trùng tên. Chạy validator và smoke test, xác minh Antigravity đã phát hiện apes-orchestrator cùng 8 subagents. Dùng Orchestrator bootstrap dự án bằng tiếng Việt, nghiên cứu GitHub/tài liệu chính thức, tạo brief/architecture/test plan/milestones rồi dừng chờ tôi duyệt trước khi code. Không giả vờ đã gọi subagent nếu IDE không thực sự tạo subagent. Không tự deploy, mua dịch vụ, tạo cloud resource hoặc thay đổi dữ liệu quan trọng.
+> Hãy tự cài APES 3.0 từ https://github.com/kimducanh27-cpu/agy-ide-setup. Đọc START_HERE_FOR_AI_VI.md, kiểm tra installer trước khi chạy, cài Global + Workspace Rules, Skills và cả 9 Custom Agents theo đường dẫn native. Không ghi đè cấu hình cá nhân; backup file APES trùng tên. Chạy validator và smoke test, xác minh Antigravity đã phát hiện apes-orchestrator cùng 8 subagents. Dùng Orchestrator bootstrap dự án bằng tiếng Việt, nghiên cứu GitHub/tài liệu chính thức, tạo brief/architecture/test plan/milestones rồi dừng chờ tôi duyệt trước khi code. Không giả vờ đã gọi subagent nếu runtime surface đang dùng không thực sự tạo/invoke worker riêng. Không tự deploy, mua dịch vụ, tạo cloud resource hoặc thay đổi dữ liệu quan trọng.
 
 Bạn không cần tự gõ lệnh PowerShell nếu Agent có terminal/file tools.
 
@@ -147,13 +149,13 @@ Không code sản phẩm trước khi người dùng duyệt brief, kiến trúc
 
 GitHub Actions chạy validator và smoke test cài đặt vào workspace tạm trên Windows. PASS chỉ xác nhận metadata/đường dẫn/copy và cú pháp PowerShell, không chứng nhận chất lượng ứng dụng hoặc khả năng thực thi subagent trên máy thật.
 
-## Kiểm tra trong Antigravity Desktop
+## Kiểm tra trong Antigravity 2.0 Desktop App / Antigravity IDE
 
 1. Mở Agent side panel → ... → Customizations/Agents.
 2. Xác minh có chín APES agents.
 3. Chọn apes-orchestrator làm agent chính nếu muốn.
 4. Yêu cầu Orchestrator giao tác vụ đọc-only cho apes-project-analyst.
-5. Xác minh subagent thật sự xuất hiện và trả kết quả. Nếu IDE chưa hỗ trợ, báo rõ và chuyển sang Skills tuần tự.
+5. Xác minh subagent thật sự xuất hiện và trả kết quả. Nếu surface đang dùng chưa hỗ trợ, báo rõ và chuyển sang Skills tuần tự.
 
 ## MCP và Hooks
 
@@ -168,4 +170,4 @@ APES không tự cài MCP server hoặc hooks tuỳ tiện. MCP có thể cần 
 - Không commit secrets hoặc dữ liệu cá nhân.
 - Không tự deploy production, chi tiêu, tạo cloud resource hoặc thay đổi dữ liệu thật.
 
-Tài liệu: START_HERE_FOR_AI_VI.md · Custom Agents: docs/HARNESS-AGENTS.md · Compatibility: docs/ANTIGRAVITY-COMPATIBILITY.md · Impeccable: docs/IMPECCABLE-INTEGRATION.md · MCP/Hooks: docs/OPTIONAL-INTEGRATIONS.md · Official subagents docs: https://antigravity.google/docs/subagents
+Tài liệu: START_HERE_FOR_AI_VI.md · Antigravity 2.0/IDE compatibility: docs/ANTIGRAVITY-COMPATIBILITY.md · Custom Agents: docs/HARNESS-AGENTS.md · Compatibility: docs/ANTIGRAVITY-COMPATIBILITY.md · Impeccable: docs/IMPECCABLE-INTEGRATION.md · MCP/Hooks: docs/OPTIONAL-INTEGRATIONS.md · Official subagents docs: https://antigravity.google/docs/subagents
