@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.2.0 — 2026-10-31
+- Add optional Impeccable bridge for UI/frontend workflows without vendoring the upstream project.
+- Add a Windows installer that copies the Antigravity skill from a pinned upstream tag into the correct singular .agent/ workspace path or global Gemini skills directory; backup same-name Impeccable installs before replacement.
+- Add Impeccable installation validator and PowerShell syntax checks to APES validation.
+- Route UI/UX tasks to Impeccable when installed; preserve APES UI/UX reviewer as an independent read-only reviewer.
+- Document the absence of an Antigravity lifecycle-hook setup in this integration; do not claim automatic post-edit scanning.
+
 ## 2.1.0 — 2026-10-31
 - Add nine native Antigravity Custom Agents: one selectable Orchestrator and eight specialist subagents.
 - Add global and workspace AGENTS.md instructions and agent routing.

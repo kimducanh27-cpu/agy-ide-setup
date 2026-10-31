@@ -66,15 +66,33 @@ function Test-AgentFile([string]$Path) {
     }
 }
 
-Write-Host 'APES 2.1 deterministic validation' -ForegroundColor Cyan
+Write-Host 'APES 2.2 deterministic validation' -ForegroundColor Cyan
 foreach ($item in @(
     @('README.md','README'),
     @('START_HERE_FOR_AI_VI.md','AI setup guide'),
     @('NOTICE.md','Attribution notice'),
-    @('scripts/Install-APES.ps1','Installer'),
+    @('scripts/Install-APES.ps1','APES installer'),
+    @('scripts/Install-Impeccable.ps1','Optional Impeccable installer'),
+    @('scripts/Test-Impeccable.ps1','Optional Impeccable validator'),
+    @('docs/IMPECCABLE-INTEGRATION.md','Impeccable integration guide'),
     @('global/AGENTS.md','Global instructions'),
     @('.agents/AGENTS.md','Workspace instructions')
 )) { Test-RequiredPath (Join-Path $repoRoot $item[0]) $item[1] }
+
+# Parse every PowerShell script without executing it. CI therefore validates syntax
+# without downloading the optional Impeccable package or changing a developer machine.
+foreach ($scriptFile in Get-ChildItem (Join-Path $repoRoot 'scripts') -Filter '*.ps1' -File) {
+    $tokens = $null
+    $parseErrors = $null
+    [System.Management.Automation.Language.Parser]::ParseFile($scriptFile.FullName, [ref]$tokens, [ref]$parseErrors) | Out-Null
+    $checks++
+    if ($parseErrors.Count -eq 0) {
+        Write-Host "PASS  PowerShell syntax: $($scriptFile.Name)" -ForegroundColor Green
+    } else {
+        Write-Host "FAIL  PowerShell syntax: $($scriptFile.Name)" -ForegroundColor Red
+        foreach ($parseError in $parseErrors) { $failures.Add("$($scriptFile.Name): $($parseError.Message)") }
+    }
+}
 
 $repoRules = @(Get-ChildItem (Join-Path $repoRoot '.agents/rules') -Filter '*.md' -File)
 foreach ($file in $repoRules) { Test-RuleFile $file.FullName }
@@ -134,4 +152,4 @@ if ($failures.Count -gt 0) {
     foreach ($failure in $failures) { Write-Host " - $failure" -ForegroundColor Red }
     exit 1
 }
-Write-Host 'All deterministic checks passed. This validates metadata and installation paths, not application quality.' -ForegroundColor Green
+Write-Host 'All deterministic checks passed. This validates metadata, syntax and installation paths, not application quality.' -ForegroundColor Green

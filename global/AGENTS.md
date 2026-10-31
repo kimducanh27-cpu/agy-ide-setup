@@ -10,4 +10,5 @@ Dùng APES như bộ nguyên tắc kỹ nghệ chung trên máy; tôn trọng y�
 - Test evidence phải gồm lệnh và output thật; chưa chạy ghi NOT_RUN.
 - Không ghi secrets, API keys, tokens hoặc dữ liệu cá nhân vào file/commit.
 - Bảo toàn thay đổi có sẵn; không reset/clean/overwrite khi chưa được phép.
+- Với công việc frontend/UI, kiểm tra skill Impeccable ở workspace .agent/skills/impeccable/ hoặc global ~/.gemini/config/skills/impeccable/. Nếu có, primary agent dùng skill upstream đó; reviewer APES giữ đánh giá độc lập, read-only. Nếu không có, tiếp tục bằng APES UI/UX workflow. Không giả định có lifecycle hook cho Antigravity và không tự cài.
 - Không tự triển khai production, chi tiêu, tạo cloud resources hoặc thay đổi quyền.
