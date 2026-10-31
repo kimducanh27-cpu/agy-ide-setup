@@ -141,6 +141,19 @@ try {
     $checks++
     if ($state.currentStage -eq 'RESEARCH' -and $state.completedStages -contains 'DISCOVERY') { Write-Host 'PASS  Run State transition and evidence checkpoint' -ForegroundColor Green }
     else { throw 'Run State did not advance to RESEARCH as expected.' }
+    & (Join-Path $repoRoot 'scripts/Manage-APESRun.ps1') -Action Advance -ProjectPath $smokeRoot -RunId $runId -Stage RESEARCH -Evidence 'Research checkpoint smoke test'
+    & (Join-Path $repoRoot 'scripts/Manage-APESRun.ps1') -Action Advance -ProjectPath $smokeRoot -RunId $runId -Stage PLANNING -Evidence 'Planning checkpoint smoke test'
+    $approvalRejected = $false
+    try { & (Join-Path $repoRoot 'scripts/Manage-APESRun.ps1') -Action Advance -ProjectPath $smokeRoot -RunId $runId -Stage APPROVAL -Evidence 'Approval guard test' | Out-Null }
+    catch { $approvalRejected = $true }
+    $checks++
+    if ($approvalRejected) { Write-Host 'PASS  Approval gate rejects missing confirmation' -ForegroundColor Green }
+    else { throw 'Approval gate accepted a transition without explicit confirmation.' }
+    & (Join-Path $repoRoot 'scripts/Manage-APESRun.ps1') -Action Advance -ProjectPath $smokeRoot -RunId $runId -Stage APPROVAL -Evidence 'Explicit confirmation guard smoke test' -ApprovalConfirmed
+    $state = Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
+    $checks++
+    if ($state.currentStage -eq 'IMPLEMENTATION') { Write-Host 'PASS  Approval confirmation advances to next stage' -ForegroundColor Green }
+    else { throw 'Approval confirmation did not advance to IMPLEMENTATION.' }
 } catch {
     $failures.Add("Workflow Engine smoke test: $($_.Exception.Message)")
     Write-Host "FAIL  Workflow Engine smoke test: $($_.Exception.Message)" -ForegroundColor Red
