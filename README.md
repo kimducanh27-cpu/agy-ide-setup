@@ -1,34 +1,26 @@
-# APES 2.0 — Antigravity Project Engineering System
+# APES 2.1 — Antigravity Project Engineering System
 
-**Bộ thiết lập Antigravity IDE cho Windows 11 · Tài liệu tiếng Việt · Native-first**
+**Bộ thiết lập Antigravity IDE cho Windows 11 · Tiếng Việt · Native Rules + Skills + Custom Agents**
 
-APES kết hợp hai lớp:
+APES có ba lớp:
 
-1. **Project Bootstrap:** phân tích yêu cầu, nghiên cứu GitHub/tài liệu chính thức, đề xuất stack, kiến trúc, kế hoạch kiểm thử và sinh cấu hình riêng cho dự án.
+1. **Project Bootstrap:** phân tích yêu cầu, nghiên cứu GitHub/tài liệu chính thức, đề xuất stack, kiến trúc, kế hoạch kiểm thử và sinh cấu hình riêng.
 2. **Engineering Harness:** phân vai chuyên môn, thực thi theo milestone, review độc lập, đánh giá bằng bằng chứng, sửa lỗi có giới hạn và lưu bài học.
+3. **Native Custom Agents:** một Orchestrator có thể chọn làm agent chính và tám worker có thể được gọi như subagents bằng cơ chế native Antigravity.
 
-APES dùng cơ chế **Rules + Agent Skills** có sẵn của Antigravity. Các vai trò chuyên môn là skill-based roles; Antigravity chỉ được yêu cầu chạy subagents khi tính năng đó thực sự có trong phiên bản IDE đang dùng. Không giả định có 17 agent độc lập chạy nền.
+## Dùng nhanh — giao Agent tự cài
 
-## Dùng nhanh — không cần tự cài thủ công
+1. Mở Antigravity tại thư mục dự án.
+2. Dán prompt sau vào Agent Chat:
 
-1. Mở Antigravity tại thư mục dự án bạn muốn làm.
-2. Gửi nguyên câu sau vào Agent Chat:
+> Hãy tự cài APES 2.1 từ `https://github.com/kimducanh27-cpu/agy-ide-setup`. Đọc `START_HERE_FOR_AI_VI.md`, kiểm tra installer trước khi chạy, cài Global + Workspace Rules, Skills và cả 9 Custom Agents theo đường dẫn native. Không ghi đè cấu hình cá nhân; backup file APES trùng tên. Chạy validator và smoke test, xác minh Antigravity đã phát hiện `apes-orchestrator` cùng 8 subagents. Dùng Orchestrator bootstrap dự án bằng tiếng Việt, nghiên cứu GitHub/tài liệu chính thức, tạo brief/architecture/test plan/milestones rồi dừng chờ tôi duyệt trước khi code. Không giả vờ đã gọi subagent nếu IDE không thực sự tạo subagent. Không tự deploy, mua dịch vụ, tạo cloud resource hoặc thay đổi dữ liệu quan trọng.
 
-> **Hãy tự cài và thiết lập APES 2.0 cho workspace này từ `https://github.com/kimducanh27-cpu/agy-ide-setup`. Tôi không rành kỹ thuật. Hãy làm theo `START_HERE_FOR_AI_VI.md`: tự clone repo vào thư mục công cụ riêng, đọc và kiểm tra script trước khi chạy, cài APES global + workspace theo cách an toàn, chạy validator, tạo hồ sơ bootstrap dự án bằng tiếng Việt, nghiên cứu stack/GitHub và dừng ở cổng duyệt trước khi viết code sản phẩm. Không ghi đè cấu hình đang có, không xóa file, không tự chọn dịch vụ trả phí, và báo lại bằng ngôn ngữ dễ hiểu.**
-
-Agent sẽ đọc tài liệu trong repo và thực hiện các bước. Bạn không cần tự gõ lệnh PowerShell.
+Bạn không cần tự gõ lệnh PowerShell nếu Agent có terminal/file tools.
 
 ## Cài thủ công (Windows PowerShell)
 
-Clone repo:
-
 ```powershell
 git clone https://github.com/kimducanh27-cpu/agy-ide-setup.git "$env:LOCALAPPDATA\APES\agy-ide-setup"
-```
-
-Cài global một lần và cài vào thư mục dự án thực tế (thay đường dẫn ví dụ bằng dự án của bạn):
-
-```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 $apes = "$env:LOCALAPPDATA\APES\agy-ide-setup"
 $project = "D:\Projects\MyApp"
@@ -36,70 +28,70 @@ $project = "D:\Projects\MyApp"
 & "$apes\scripts\Test-APES.ps1" -ProjectPath $project -CheckGlobal
 ```
 
-## APES cài những gì?
+## Những gì được cài
 
-| Scope | Vị trí Antigravity native | Nội dung |
+| Hạng mục | Global | Workspace |
 |---|---|---|
-| Global Rules | `%USERPROFILE%\.gemini\config\rules\` | Quy tắc dùng chung, có YAML trigger hợp lệ |
-| Global Skills | `%USERPROFILE%\.gemini\config\skills\` | Bootstrap, GitHub research, delivery, review |
-| Workspace Rules | `<project>\.agents\rules\` | Quy tắc riêng cho dự án |
-| Workspace Skills | `<project>\.agents\skills\` | 17 vai trò + các quy trình APES |
-| Engineering docs | `<project>\docs\engineering\apes\` | Brief, research, architecture, milestones, risks, approval |
+| Base instructions | `~/.gemini/config/AGENTS.md` | `.agents/AGENTS.md` |
+| Rules | `~/.gemini/config/rules/` | `.agents/rules/` |
+| Skills | `~/.gemini/config/skills/` | `.agents/skills/` |
+| Custom Agents | `~/.gemini/config/agents/*.md` | `.agents/agents/*.md` |
+| Engineering docs | — | `docs/engineering/apes/` |
 
-Các file đều được namespace `apes-`. Script tạo bản sao lưu trước khi thay thế file APES cùng tên. File/cấu hình khác được giữ nguyên.
+## Custom Agents
 
-## Quy trình làm việc
+- `apes-orchestrator`: agent chính, điều phối lifecycle.
+- `apes-project-analyst`: yêu cầu và scope.
+- `apes-github-researcher`: GitHub, docs, license, compatibility.
+- `apes-solution-architect`: architecture, API/data flow, ADR.
+- `apes-implementation-engineer`: code sau approval.
+- `apes-qa-engineer`: test và triage lỗi.
+- `apes-ui-ux-reviewer`: review UI/UX độc lập.
+- `apes-security-reviewer`: security/privacy review.
+- `apes-harness-evaluator`: verdict độc lập dựa trên evidence.
+
+Chỉ Orchestrator có `mainAgent: true`; tám worker có `subagent: true`.
+
+## Quy trình
 
 ```text
 DISCOVERY → RESEARCH → ARCHITECTURE → QUALITY PLAN → HUMAN APPROVAL
-                                                        ↓
+                                                         ↓
 MILESTONE EXECUTION → TESTS → INDEPENDENT REVIEW → EVALUATION
-                         ↑              ↓                 ↓
-                         └──── FIX (tối đa 3 vòng) ← REJECT
-                                                        ↓
-                                              MEMORY + REPORT
+                          ↑              ↓                 ↓
+                          └──── FIX (tối đa 3 vòng) ← REJECT
+                                                         ↓
+                                               MEMORY + REPORT
 ```
 
-**Mặc định không viết code sản phẩm trước khi người dùng duyệt brief, kiến trúc và kế hoạch.** Sau khi được duyệt, agent làm theo milestone; mỗi milestone phải có lệnh kiểm thử thật và bằng chứng thật.
+Không code sản phẩm trước khi người dùng duyệt brief, kiến trúc và kế hoạch. Sau duyệt, từng milestone phải có acceptance criteria, lệnh kiểm tra thật và bằng chứng.
 
-## 17 vai trò chuyên môn
-
-CTO · Business Analyst · Product Manager · Solution Architect · Frontend · Backend · Mobile · Desktop · AI Engineer · Data Engineer · DevOps · SRE · DevSecOps · QA · Test Automation · Performance Engineer · Harness Evaluator.
-
-Các vai trò là các skill có thể được gọi độc lập hoặc được agent chính áp dụng tuần tự. Việc gọi subagent song song là tùy khả năng native của IDE và phải xác nhận bằng tính năng thực tế, không giả lập.
-
-## Các lệnh validator
+## Validator
 
 ```powershell
-# Kiểm tra cấu trúc repo và Antigravity metadata
 .\scripts\Test-APES.ps1
-
-# Kiểm tra cài đặt global và workspace
 .\scripts\Test-APES.ps1 -ProjectPath "D:\Projects\MyApp" -CheckGlobal
-
-# Kiểm tra hồ sơ trước khi code
 .\scripts\Test-APES.ps1 -ProjectPath "D:\Projects\MyApp" -Stage PreCode
-
-# Kiểm tra trạng thái đã duyệt
 .\scripts\Test-APES.ps1 -ProjectPath "D:\Projects\MyApp" -Stage Approved
 ```
 
-Validator chỉ kiểm tra điều có thể xác định bằng máy như file bắt buộc, frontmatter, trạng thái duyệt. Nó **không khẳng định** chất lượng kiến trúc, UI, bảo mật hay test nếu chưa chạy công cụ thực tế.
+GitHub Actions chạy validator và smoke test cài đặt vào workspace tạm trên Windows. PASS chỉ xác nhận metadata/đường dẫn/copy, không chứng nhận chất lượng ứng dụng.
 
-## Lưu ý an toàn
+## Kiểm tra trong Antigravity Desktop
+1. Mở workspace, mở Agent side panel → `...` → Customizations/Agents.
+2. Xác minh có chín APES agents.
+3. Chọn `apes-orchestrator` làm agent chính nếu muốn.
+4. Yêu cầu Orchestrator giao tác vụ đọc-only cho `apes-project-analyst`.
+5. Xác minh subagent thật sự xuất hiện và trả kết quả. Nếu IDE chưa hỗ trợ, báo rõ và chuyển sang Skills tuần tự.
 
-- Chỉ cài trong tài khoản Windows hiện tại; không cần quyền Administrator.
-- Script không tải/chạy mã bên ngoài trong lúc cài.
-- Không xóa file hiện có. File APES trùng tên được backup vào `%LOCALAPPDATA%\APES\backups\`.
-- Agent phải đọc script và giải thích tác động trước khi thực thi.
-- Không đưa API keys, passwords, tokens hoặc dữ liệu riêng tư vào repo.
-- Không để evaluator tự phê duyệt yêu cầu thay đổi dữ liệu thật, triển khai production, chi tiêu, hoặc quyền truy cập.
+## MCP và Hooks
+APES không tự cài MCP server hoặc hooks tuỳ tiện. MCP có thể cần OAuth/API keys; hooks thực thi shell commands. Xem `docs/OPTIONAL-INTEGRATIONS.md` và không ghi đè cấu hình hiện có.
 
-## Nguồn tham khảo
+## An toàn
+- Không cần quyền Administrator.
+- Installer không tải/chạy mã ngoài.
+- Không xóa file hiện có; file APES cùng tên được backup tại `%LOCALAPPDATA%\APES\backups\`.
+- Không commit secrets hoặc dữ liệu cá nhân.
+- Không tự deploy production, chi tiêu, tạo cloud resource hoặc thay đổi dữ liệu thật.
 
-- [Antigravity Rules](https://antigravity.google/docs/rules/)
-- [Antigravity Agent Skills](https://antigravity.google/docs/skills)
-- [Antigravity Customization Discovery](https://antigravity.google/docs/customization-discovery)
-- [vietanhdo/harness-skeleton](https://github.com/vietanhdo/harness-skeleton) — tham khảo mô hình role-based harness; APES không vendoring/copy mã nguồn hoặc skills của repo này.
-
-Xem [START_HERE_FOR_AI_VI.md](START_HERE_FOR_AI_VI.md) để giao toàn bộ việc cài đặt cho agent.
+Tài liệu: [START_HERE_FOR_AI_VI.md](START_HERE_FOR_AI_VI.md) · [Custom Agents](docs/HARNESS-AGENTS.md) · [Compatibility](docs/ANTIGRAVITY-COMPATIBILITY.md) · [MCP/Hooks](docs/OPTIONAL-INTEGRATIONS.md) · [Official subagents docs](https://antigravity.google/docs/subagents)

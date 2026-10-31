@@ -11,3 +11,10 @@ jobs:
       - name: Validate native metadata and file layout
         shell: pwsh
         run: ./scripts/Test-APES.ps1
+      - name: Smoke test workspace installer
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'apes-smoke-workspace'
+          New-Item -ItemType Directory -Force -Path $target | Out-Null
+          ./scripts/Install-APES.ps1 -Scope Project -ProjectPath $target
+          ./scripts/Test-APES.ps1 -ProjectPath $target -Stage PreCode
