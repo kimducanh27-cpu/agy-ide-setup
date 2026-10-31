@@ -1,0 +1,37 @@
+name: APES 3.0 Workflow Engine
+
+on:
+  push:
+    branches: [main, "feature/**"]
+    paths:
+      - "config/workflows.json"
+      - "scripts/Build-APESPrompt.ps1"
+      - "scripts/Manage-APESRun.ps1"
+      - "scripts/Test-APES.ps1"
+      - "templates/engine/**"
+      - ".agents/skills/apes-workflow-engine/**"
+      - "global/skills/apes-workflow-engine/**"
+      - ".agents/rules/apes-workflow-engine.md"
+      - "global/rules/apes-workflow-engine.md"
+      - ".github/workflows/apes-engine-ci.yml"
+  pull_request:
+    paths:
+      - "config/workflows.json"
+      - "scripts/Build-APESPrompt.ps1"
+      - "scripts/Manage-APESRun.ps1"
+      - "scripts/Test-APES.ps1"
+      - "templates/engine/**"
+      - ".agents/skills/apes-workflow-engine/**"
+      - "global/skills/apes-workflow-engine/**"
+      - ".agents/rules/apes-workflow-engine.md"
+      - "global/rules/apes-workflow-engine.md"
+      - ".github/workflows/apes-engine-ci.yml"
+
+jobs:
+  windows-engine-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate APES and smoke-test workflow engine
+        shell: pwsh
+        run: ./scripts/Test-APES.ps1
