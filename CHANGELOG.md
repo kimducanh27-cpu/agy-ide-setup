@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0 — 2026-10-31
+- Add a workflow catalog for Quick Fix, Standard Feature, Full Project, Deep Research and Hard Review.
+- Add a PowerShell Prompt Builder that assembles Vietnamese prompts from workflow, project, goal and execution mode.
+- Add an explicit JSON run-state ledger with ordered stage transitions, evidence checkpoints, blocking/resume and approval confirmation.
+- Add native workspace/global workflow-engine skill and rules while preserving the existing nine native agents, Impeccable and optional FlowPlan integrations.
+- Document runtime limits: prompt assembly is not execution, state updates are explicit, and no automatic terminal/subagent telemetry is claimed.
+
 ## 2.3.0 — 2026-10-31
 - Add optional FlowPlan Windows operations bridge for Antigravity Desktop over local Streamable HTTP MCP.
 - Add safe Windows MCP config merge helper with loopback-only validation, health preflight, conflict protection and backup.
