@@ -1,4 +1,4 @@
-name: APES 3.0 Workflow Engine
+name: APES 3.1 Runtime and Workflow Engine
 
 on:
   workflow_dispatch:
@@ -9,6 +9,11 @@ on:
       - "scripts/Build-APESPrompt.ps1"
       - "scripts/Manage-APESRun.ps1"
       - "scripts/Test-APES.ps1"
+      - "scripts/runtime/**"
+      - "scripts/Install-APESRuntime.ps1"
+      - "scripts/Remove-APESRuntime.ps1"
+      - "scripts/Test-APESRuntime.ps1"
+      - "docs/APES-3.1-RUNTIME-CAPTURE-VI.md"
       - "templates/engine/**"
       - ".agents/skills/apes-workflow-engine/**"
       - "global/skills/apes-workflow-engine/**"
@@ -21,6 +26,11 @@ on:
       - "scripts/Build-APESPrompt.ps1"
       - "scripts/Manage-APESRun.ps1"
       - "scripts/Test-APES.ps1"
+      - "scripts/runtime/**"
+      - "scripts/Install-APESRuntime.ps1"
+      - "scripts/Remove-APESRuntime.ps1"
+      - "scripts/Test-APESRuntime.ps1"
+      - "docs/APES-3.1-RUNTIME-CAPTURE-VI.md"
       - "templates/engine/**"
       - ".agents/skills/apes-workflow-engine/**"
       - "global/skills/apes-workflow-engine/**"
@@ -36,3 +46,6 @@ jobs:
       - name: Validate APES and smoke-test workflow engine
         shell: pwsh
         run: ./scripts/Test-APES.ps1
+      - name: Smoke-test runtime event collector
+        shell: pwsh
+        run: ./scripts/Test-APESRuntime.ps1
