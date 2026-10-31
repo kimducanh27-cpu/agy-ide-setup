@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "workflows": [
+    {
+      "id": "quick-fix",
+      "name": "Quick Fix",
+      "description": "Sửa lỗi nhỏ, phạm vi hẹp, có thể xác minh nhanh.",
+      "risk": "low",
+      "approvalRequired": false,
+      "maxRepairRounds": 2,
+      "stages": ["DISCOVERY", "IMPLEMENTATION", "QA", "AUDIT"],
+      "gates": {
+        "DISCOVERY": ["Xác định lỗi và cách tái hiện", "Xác định file/phạm vi bị ảnh hưởng"],
+        "IMPLEMENTATION": ["Chỉ sửa đúng phạm vi", "Không thay đổi ngoài yêu cầu"],
+        "QA": ["Chạy kiểm tra liên quan", "Đọc git diff", "Không còn lỗi đã biết"],
+        "AUDIT": ["Tóm tắt thay đổi", "Nêu rõ kiểm tra chưa chạy"]
+      }
+    },
+    {
+      "id": "standard-feature",
+      "name": "Standard Feature",
+      "description": "Phát triển tính năng thông thường có test và review.",
+      "risk": "medium",
+      "approvalRequired": true,
+      "maxRepairRounds": 3,
+      "stages": ["DISCOVERY", "RESEARCH", "PLANNING", "APPROVAL", "IMPLEMENTATION", "QA", "REVIEW", "AUDIT"],
+      "gates": {
+        "DISCOVERY": ["Mục tiêu và người dùng", "Acceptance criteria"],
+        "RESEARCH": ["Kiểm tra codebase hiện tại", "Nguồn GitHub/docs chính thức khi cần"],
+        "PLANNING": ["Thiết kế giải pháp", "Danh sách file và task", "Test plan và rủi ro"],
+        "APPROVAL": ["Có xác nhận duyệt rõ ràng của người dùng"],
+        "IMPLEMENTATION": ["Thực hiện từng task", "Không mở rộng scope"],
+        "QA": ["Chạy test thực tế", "Đọc diff", "Kiểm tra regression"],
+        "REVIEW": ["Review độc lập nếu native subagent thực sự chạy", "Ghi nhận finding và evidence"],
+        "AUDIT": ["Đối chiếu acceptance criteria", "Báo cáo kết quả và giới hạn"]
+      }
+    },
+    {
+      "id": "full-project",
+      "name": "Full Project",
+      "description": "Bootstrap dự án mới từ yêu cầu đến kiểm định bàn giao.",
+      "risk": "high",
+      "approvalRequired": true,
+      "maxRepairRounds": 3,
+      "stages": ["DISCOVERY", "RESEARCH", "ARCHITECTURE", "QUALITY_PLAN", "MILESTONES", "APPROVAL", "EXECUTION", "QA", "SECURITY", "UI_UX", "AUDIT"],
+      "gates": {
+        "DISCOVERY": ["Project brief", "Đối tượng và mục tiêu", "Phạm vi và non-goals"],
+        "RESEARCH": ["So sánh lựa chọn", "Kiểm tra GitHub, license, maintenance và tài liệu chính thức"],
+        "ARCHITECTURE": ["Kiến trúc", "Data/API flow", "ADR và trade-offs"],
+        "QUALITY_PLAN": ["Test strategy", "Security/privacy", "Accessibility và responsive nếu có UI"],
+        "MILESTONES": ["Task graph có dependency thật", "Definition of Done từng milestone"],
+        "APPROVAL": ["Người dùng duyệt brief, kiến trúc và kế hoạch"],
+        "EXECUTION": ["Từng milestone có evidence", "Không tự deploy hoặc chi tiêu"],
+        "QA": ["Unit/integration/e2e phù hợp", "Build/lint/typecheck", "Regression"],
+        "SECURITY": ["Dependency/config/secrets review", "Threat/risk review"],
+        "UI_UX": ["Review UI/UX nếu có giao diện", "Impeccable nếu đã cài"],
+        "AUDIT": ["Acceptance criteria", "Known issues", "Hướng dẫn chạy và bàn giao"]
+      }
+    },
+    {
+      "id": "deep-research",
+      "name": "Deep Research",
+      "description": "Nghiên cứu có dẫn nguồn, đối chiếu và khuyến nghị.",
+      "risk": "low",
+      "approvalRequired": false,
+      "maxRepairRounds": 1,
+      "stages": ["QUESTION", "SOURCE_DISCOVERY", "EVIDENCE", "CROSS_CHECK", "SYNTHESIS", "AUDIT"],
+      "gates": {
+        "QUESTION": ["Câu hỏi, phạm vi, tiêu chí quyết định"],
+        "SOURCE_DISCOVERY": ["Ưu tiên nguồn gốc/primary sources", "Kiểm tra ngày và độ liên quan"],
+        "EVIDENCE": ["Ghi claim và nguồn hỗ trợ", "Phân biệt dữ kiện và suy luận"],
+        "CROSS_CHECK": ["Đối chiếu nguồn độc lập", "Nêu bất đồng và thiếu dữ liệu"],
+        "SYNTHESIS": ["Kết luận có mức độ tin cậy", "Khuyến nghị có điều kiện"],
+        "AUDIT": ["Không bịa nguồn/số liệu", "Liệt kê giới hạn nghiên cứu"]
+      }
+    },
+    {
+      "id": "hard-review",
+      "name": "Hard Review",
+      "description": "Phản biện nghiêm khắc về kiến trúc, code, UX, bảo mật và khả năng bảo trì.",
+      "risk": "medium",
+      "approvalRequired": false,
+      "maxRepairRounds": 0,
+      "stages": ["SCOPE", "INSPECTION", "REPRODUCTION", "FINDINGS", "PRIORITIZATION", "AUDIT"],
+      "gates": {
+        "SCOPE": ["Xác định tiêu chí và vùng review"],
+        "INSPECTION": ["Đọc code/config/docs liên quan", "Không sửa file"],
+        "REPRODUCTION": ["Tái hiện vấn đề khi an toàn và khả thi", "Không tuyên bố test nếu chưa chạy"],
+        "FINDINGS": ["Finding có vị trí, impact và evidence"],
+        "PRIORITIZATION": ["Severity và remediation"],
+        "AUDIT": ["Tổng hợp blockers, risks và unknowns"]
+      }
+    }
+  ]
+}
