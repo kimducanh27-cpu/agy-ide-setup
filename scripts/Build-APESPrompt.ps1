@@ -4,7 +4,8 @@ param(
     [Parameter(Mandatory=$true)][string]$ProjectPath,
     [Parameter(Mandatory=$true)][string]$Goal,
     [ValidateSet('Auto','ManualCheckpoint')][string]$Mode = 'Auto',
-    [string]$OutputPath = ''
+    [string]$OutputPath = '',
+    [switch]$Force
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
@@ -37,6 +38,7 @@ $replacements = @{
 }
 foreach ($key in $replacements.Keys) { $template = $template.Replace($key, [string]$replacements[$key]) }
 if ($OutputPath) {
+    if ((Test-Path -LiteralPath $OutputPath) -and -not $Force) { throw "Output đã tồn tại; không ghi đè nếu chưa truyền -Force: $OutputPath" }
     $parent = Split-Path -Parent $OutputPath
     if ($parent -and -not (Test-Path -LiteralPath $parent)) { New-Item -ItemType Directory -Path $parent -Force | Out-Null }
     Set-Content -LiteralPath $OutputPath -Value $template -Encoding UTF8
