@@ -1,6 +1,7 @@
 name: APES 3.0 Workflow Engine
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, "feature/**"]
     paths:
