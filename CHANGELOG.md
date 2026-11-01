@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased — CI supply chain
+- Pin `actions/checkout` to commit `11d5960` (v4.4.0) in both workflows instead of the moving `@v4` tag. A tag can be repointed; a commit cannot.
+- Note: `actions/checkout` is at v7. Moving off v4 is a separate change with its own behaviour differences and is not bundled here.
+
 ## Unreleased — Restore from backup
 - Add `scripts/Restore-APES.ps1`, which reads the `backup-manifest.json` written by the installer and restores overwritten files. It previews by default and only writes with `-Force`.
 - Preflight checks every backup file before touching anything: one missing file aborts the whole run with no changes.
