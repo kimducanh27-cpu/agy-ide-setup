@@ -1,6 +1,6 @@
 ---
 name: apes-flowplan-operations
-description: "Operate the optional FlowPlan MCP board for project planning, task dependencies, card-by-card execution, evidence-based status updates, user feedback and safe recovery. Use when FlowPlan MCP is connected or the user requests a FlowPlan board."
+description: "Operate the optional FlowPlan MCP board as a human-friendly projection of the canonical APES Master Plan, including card-by-card execution, evidence-based status updates, feedback and safe recovery. Use when FlowPlan MCP is connected or the user requests a visual project board."
 ---
 
 # APES FlowPlan Operations
@@ -9,7 +9,7 @@ description: "Operate the optional FlowPlan MCP board for project planning, task
 
 Use only when FlowPlan MCP tools are available in this runtime or the user explicitly requests FlowPlan. Do not make FlowPlan mandatory for small questions, simple edits or work that does not benefit from a task board.
 
-Read docs/FLOWPLAN-WINDOWS-INTEGRATION.md and templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md when the user needs setup or copy-ready prompts.
+Read docs/FLOWPLAN-WINDOWS-INTEGRATION.md and templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md in the APES source repository, or their installed copies under docs/engineering/apes/, when the user needs setup or copy-ready prompts.
 
 ## Non-negotiable truths
 
@@ -28,16 +28,20 @@ Read docs/FLOWPLAN-WINDOWS-INTEGRATION.md and templates/prompts/FLOWPLAN-WORKFLO
 4. If tools are absent or calls fail, report MCP_DISCONNECTED and stop FlowPlan-dependent actions. Do not claim a config file alone proves connectivity.
 5. Never invoke destructive tools as a connection test.
 
-## Plan creation
+## Plan projection and creation
 
-1. Inspect workspace, Git status, existing project documentation and available test commands.
-2. Call list_plans before creating a board; reuse an existing matching plan only after confirming it is the intended active plan.
-3. Create a new plan only when requested/appropriate; retain plan_id and card_id mapping.
-4. Decompose work into cards with explicit objective, deliverable, files, owner role, acceptance criteria, verification commands, risks and dependencies.
-5. Use only five valid card types: research, planning, create, edit, test.
-6. FlowPlan add_cards requires dependencies on later cards. Make the first card a real root/foundation task. Create parallel branches that depend on the same prerequisite; connect integration/final-test cards to the branches they truly require. Do not invent dependencies or cycles.
-7. Use $0, $1... only to refer to cards added in the same add_cards call.
-8. After create_plan/add_cards, call get_plan/get_cards and verify the persisted plan and graph. If readback fails, report the board as unverified.
+1. Do not use this skill as the strategic planning source. For multi-step planning, first use apes-project-manager to create the canonical Project Brief, Master Plan and task-graph.json.
+2. Use apes-flowplan-projection to validate and simplify that canonical plan for a non-technical user.
+3. FlowPlan is a visual projection and feedback surface. It is not the only plan store and does not own canonical scope, architecture, milestones or dependencies.
+4. Call list_plans before creating a board; reuse a matching plan only after confirming project identity and revision.
+5. Create a new plan only when the user requested/approved a visual board or the active workflow explicitly requires one. Retain plan_id and canonical task ID ↔ card_id mappings in FLOWPLAN-MAPPING.json.
+6. Publish concise Vietnamese card titles and explanations. Keep deeper technical details in the canonical plan and include only useful references in card descriptions.
+7. Use only five valid card types: research, planning, create, edit, test.
+8. FlowPlan add_cards may require dependencies on later cards. Make the first card a real root/foundation task. Create parallel branches only from shared genuine prerequisites; connect integration/final-test cards to the branches they truly require. Do not invent dependencies or cycles.
+9. Use $0, $1... only to refer to cards added in the same add_cards call.
+10. For a plan awaiting user approval, publish cards with [REVIEW]. After explicit approval, use [TODO]. Never start implementation merely because a draft board exists.
+11. After create_plan/add_cards, call get_plan/get_cards and verify the persisted plan and graph. If readback fails, report the board as unverified.
+12. If FlowPlan disconnects, continue using canonical project files and report MCP_DISCONNECTED. Never lose or replace the Master Plan with board content.
 
 ## Card execution loop
 

@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [ValidateSet('Global','Project','All')][string]$Scope = 'All',
     [string]$ProjectPath = (Get-Location).Path
@@ -66,6 +66,21 @@ function Install-Project {
     Get-ChildItem $templateRoot -Recurse -File | ForEach-Object {
         $rel = $_.FullName.Substring($templateRoot.Length).TrimStart([char]'\')
         Copy-NamespaceFile $_.FullName (Join-Path $docRoot $rel)
+    }
+    $projectManagementTemplateRoot = Join-Path $repoRoot 'templates\project-management'
+    $projectManagementDestination = Join-Path $docRoot 'templates\project-management'
+    Get-ChildItem $projectManagementTemplateRoot -Recurse -File | ForEach-Object {
+        $rel = $_.FullName.Substring($projectManagementTemplateRoot.Length).TrimStart([char]'\')
+        Copy-NamespaceFile $_.FullName (Join-Path $projectManagementDestination $rel)
+    }
+    $workflowConfigDestination = Join-Path $docRoot 'config\workflows.json'
+    Copy-NamespaceFile (Join-Path $repoRoot 'config\workflows.json') $workflowConfigDestination
+    Copy-NamespaceFile (Join-Path $repoRoot 'docs\PROJECT-PLANNING-AND-FLOWPLAN.md') (Join-Path $docRoot 'PROJECT-PLANNING-AND-FLOWPLAN.md')
+    Copy-NamespaceFile (Join-Path $repoRoot 'docs\FLOWPLAN-WINDOWS-INTEGRATION.md') (Join-Path $docRoot 'FLOWPLAN-WINDOWS-INTEGRATION.md')
+    $promptRoot = Join-Path $repoRoot 'templates\prompts'
+    $promptDestination = Join-Path $docRoot 'prompts'
+    foreach ($promptName in @('APES-PROJECT-MANAGER-WORKFLOW-VI.md','FLOWPLAN-WORKFLOW-PROMPTS-VI.md')) {
+        Copy-NamespaceFile (Join-Path $promptRoot $promptName) (Join-Path $promptDestination $promptName)
     }
     $marker = Join-Path $agentRoot 'apes-install.json'
     $markerContent = [ordered]@{

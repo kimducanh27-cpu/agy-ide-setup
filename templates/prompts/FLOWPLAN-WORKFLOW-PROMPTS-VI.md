@@ -24,69 +24,65 @@ Báo rõ:
 Không được coi việc nhìn thấy cấu hình JSON là bằng chứng MCP đã kết nối.
 ~~~
 
-## 1. Plan — nghiên cứu và tạo bảng, chưa code
+## 1. Plan — tạo kế hoạch chuẩn và bảng quan sát, chưa code
 
 ~~~text
-# APES FLOWPLAN — PLANNING MODE
+# APES PROJECT MANAGER — PLAN FIRST
 
 Dự án/yêu cầu:
 [ĐIỀN YÊU CẦU]
 
-Mục tiêu: nghiên cứu, phân rã công việc và tạo task graph trên FlowPlan. Tuyệt đối chưa chỉnh sửa code sản phẩm.
+Mục tiêu: tạo bộ kế hoạch chuẩn trong workspace và một bảng FlowPlan dễ hiểu để tôi quan sát. Tuyệt đối chưa triển khai sản phẩm.
 
-A. Khảo sát
-- Kiểm tra workspace root, Git status, branch và thay đổi chưa commit.
-- Đọc README, manifests, cấu hình và hướng dẫn hiện có.
-- Xác định stack, kiến trúc và test commands thực tế.
-- Nghiên cứu GitHub và tài liệu chính thức cho quyết định kỹ thuật quan trọng.
-- Gọi specialist subagents cho phần độc lập nếu native runtime thực sự có thể khởi chạy chúng. Nếu không, ghi rõ chưa có independent subagent.
+A. Project Brief và Master Plan
+- Đọc APES Rules, Skills, Custom Agents và config/workflows.json.
+- Dùng apes-project-manager; chọn một workflow có sẵn và giải thích lựa chọn.
+- Kiểm tra workspace, Git status, README, manifests, tài liệu và khả năng hiện tại.
+- Phân biệt VERIFIED, USER-PROVIDED, ASSUMPTION và UNKNOWN.
+- Tạo/cập nhật Project Brief, Master Plan và task-graph.json tại:
+  docs/engineering/apes/projects/<slug>/
+- Giữ Master Plan và Task Graph là nguồn chuẩn của phạm vi, kiến trúc, milestone và dependency.
+- Thực hiện Plan Quality Audit; không che giấu finding nghiêm trọng.
 
-B. Phân rã
-Mỗi card phải có:
-- Prefix [TODO], title, card_type.
-- Objective và expected output.
-- Acceptance criteria có thể kiểm chứng.
-- Files/modules liên quan.
-- Agent/skill/MCP cần thiết nếu có.
-- Dependency có lý do rõ ràng.
-- Cách kiểm tra và rủi ro.
+B. Chuẩn bị bản chiếu FlowPlan
+- Chỉ dùng apes-flowplan-projection sau khi canonical plan đã hợp lệ.
+- Gọi list_plans trước khi tạo; kiểm tra plan trùng và đúng project.
+- Dùng tiêu đề tiếng Việt dễ hiểu; không biến từng file edit/lệnh terminal thành một card.
+- Một card tương ứng một deliverable có ý nghĩa; giữ canonical task ID trong mô tả.
+- Card chờ người dùng duyệt phải có prefix [REVIEW], không dùng [DOING].
+- Ghi plan_id và mapping task ID ↔ card ID vào FLOWPLAN-MAPPING.json.
+- Gọi get_plan/get_cards để readback sau khi ghi.
 
-Chia task đủ nhỏ để một card có thể được implement và verify độc lập. Đừng gộp cả feature lớn thành một card.
-
-C. FlowPlan
-- Gọi list_plans trước, tránh tạo plan trùng.
-- Nếu có plan đang hoạt động đúng dự án, báo plan đó và hỏi có tiếp tục dùng không; không xóa hoặc clear.
-- Nếu cần plan mới, gọi create_plan.
-- Gọi add_cards theo graph hợp lệ. FlowPlan yêu cầu card sau card đầu tiên phải có dependency. Dùng $0, $1... đúng theo card tạo cùng lần gọi; tạo root/foundation rõ ràng rồi mới tạo nhánh.
-- Không tạo dependency vòng hoặc dependency giả.
-- Lưu plan_id và map card_id.
-- Gọi get_plan/get_cards để đọc lại và xác minh card count, title, type, files và dependencies.
-
-D. Dừng
-Trình bày kiến trúc, các phase, task graph, số card, rủi ro, criteria và plan_id.
-DỪNG SAU KHI TẠO BẢNG.
-Không code, cài package, migration, deploy, publish hoặc xóa dữ liệu.
-Chỉ tiếp tục khi tôi gửi: DUYỆT KẾ HOẠCH.
-Không được nói đã tạo bảng nếu MCP tool call không thành công.
+C. Dừng và trình duyệt
+- Trình bày brief, workflow, mục tiêu, milestone, critical path, nhánh song song, rủi ro, quyết định cần duyệt và đường dẫn Master Plan.
+- Phân biệt số task trong Master Plan với số card được xuất bản.
+- Nếu MCP không kết nối, báo MCP_DISCONNECTED và vẫn giữ canonical plan.
+- DỪNG. Không sửa code sản phẩm, cài package, migration, deploy, commit hoặc push.
+- Chỉ tiếp tục khi tôi gửi DUYỆT KẾ HOẠCH cho đúng revision.
+- Không tuyên bố FlowPlan đã cập nhật nếu MCP write và readback chưa thành công.
 ~~~
 
-## 2. Approve — bắt đầu kế hoạch đã duyệt
+## 2. Approve — ghi nhận duyệt và bắt đầu kế hoạch đã duyệt
 
 ~~~text
-DUYỆT KẾ HOẠCH. Hãy bắt đầu kế hoạch FlowPlan hiện tại.
+DUYỆT KẾ HOẠCH revision đang được trình bày. Chỉ áp dụng cho đúng brief, Master Plan và task-graph revision đó.
 
-1. Gọi list_plans, xác định đúng plan đã duyệt.
-2. Gọi get_plan/get_cards và đọc lại dependencies.
-3. Kiểm tra get_all_feedback.
-4. Đối chiếu Git status và workspace thực tế.
-5. Chỉ chọn card có tất cả dependency [PASS].
-6. Không thay đổi phạm vi đã duyệt.
+1. Đọc lại PROJECT_BRIEF.md, MASTER_PLAN.md, task-graph.json và APPROVALS.md.
+2. Xác nhận revision chưa thay đổi so với bản người dùng đã xem.
+3. Ghi approval rõ ràng, phạm vi và ngày vào APPROVALS.md.
+4. Đặt planState thành APPROVED trong task-graph.json sau khi ghi nhận approval.
+5. Gọi list_plans/get_plan/get_cards để xác định đúng bảng FlowPlan.
+6. Chuyển card [REVIEW] thành [TODO] bằng update_card; không chuyển thẳng sang [DOING].
+7. Gọi get_cards readback và xác minh thay đổi.
+8. Đối chiếu Git status và workspace thực tế.
+9. Chỉ chọn card có tất cả dependency [PASS] để thực thi.
+10. Không thay đổi phạm vi đã duyệt.
 
-Dùng APES FlowPlan Operations skill và thực hiện theo vòng lặp:
+Dùng APES FlowPlan Operations skill theo vòng lặp:
 [TODO] → [DOING] → IMPLEMENT → VERIFY → REVIEW → [PASS].
 
 Sau mỗi card, bắt buộc kiểm thử, đọc diff, review độc lập khi khả dụng, cập nhật mô tả bằng bằng chứng và đọc lại card để xác nhận.
-Mặc định tự chuyển sang card tiếp theo chỉ khi card trước đã [PASS] được xác minh.
+Mặc định chỉ chuyển sang card tiếp theo khi card trước đã [PASS] được xác minh.
 Nếu BLOCKED, lỗi nghiêm trọng, scope thay đổi hoặc không thể xác minh thì dừng và báo tôi.
 Không tự commit/push/deploy/publish.
 ~~~

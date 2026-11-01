@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Project Manager + FlowPlan Projection
+- Add Project Manager planning skill to create canonical Project Brief, Master Plan and machine-readable Task Graph in the workspace.
+- Add human-friendly FlowPlan Projection skill; keep FlowPlan as a visual board rather than the canonical project plan or live runtime telemetry.
+- Add Project Brief, Master Plan, task graph schema/example, FlowPlan mapping, decisions, risks and approval templates.
+- Add Vietnamese Project Manager prompt pack and update FlowPlan prompt pack to draft [REVIEW] cards, require revision-bound human approval and publish [TODO] only after approval.
+- Separate planning intelligence, board projection and FlowPlan MCP operations into focused Skills.
+- Extend APES installer and deterministic validator for the new skills, docs, templates and installed workspace references.
+- Preserve the five existing APES workflows; FlowPlan projection is an auxiliary publishing/reconciliation process, not a sixth project workflow.
+
 ## 3.0.0 — 2026-10-31
 - Add a workflow catalog for Quick Fix, Standard Feature, Full Project, Deep Research and Hard Review.
 - Add a PowerShell Prompt Builder that assembles Vietnamese prompts from workflow, project, goal and execution mode.

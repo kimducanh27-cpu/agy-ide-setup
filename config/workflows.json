@@ -25,7 +25,7 @@
       "maxRepairRounds": 3,
       "stages": ["DISCOVERY", "RESEARCH", "PLANNING", "APPROVAL", "IMPLEMENTATION", "QA", "REVIEW", "AUDIT"],
       "gates": {
-        "DISCOVERY": ["Mục tiêu và người dùng", "Acceptance criteria"],
+        "DISCOVERY": ["Mục tiêu và người dùng", "Acceptance criteria", "Project Brief được tạo hoặc cập nhật"],
         "RESEARCH": ["Kiểm tra codebase hiện tại", "Nguồn GitHub/docs chính thức khi cần"],
         "PLANNING": ["Thiết kế giải pháp", "Danh sách file và task", "Test plan và rủi ro"],
         "APPROVAL": ["Có xác nhận duyệt rõ ràng của người dùng"],
@@ -44,7 +44,7 @@
       "maxRepairRounds": 3,
       "stages": ["DISCOVERY", "RESEARCH", "ARCHITECTURE", "QUALITY_PLAN", "MILESTONES", "APPROVAL", "EXECUTION", "QA", "SECURITY", "UI_UX", "AUDIT"],
       "gates": {
-        "DISCOVERY": ["Project brief", "Đối tượng và mục tiêu", "Phạm vi và non-goals"],
+        "DISCOVERY": ["Project Brief được lưu", "Đối tượng và mục tiêu", "Phạm vi và non-goals"],
         "RESEARCH": ["So sánh lựa chọn", "Kiểm tra GitHub, license, maintenance và tài liệu chính thức"],
         "ARCHITECTURE": ["Kiến trúc", "Data/API flow", "ADR và trade-offs"],
         "QUALITY_PLAN": ["Test strategy", "Security/privacy", "Accessibility và responsive nếu có UI"],

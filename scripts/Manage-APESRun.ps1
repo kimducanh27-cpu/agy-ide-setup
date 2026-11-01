@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)][ValidateSet('Initialize','Advance','Block','Resume','Complete','Show')][string]$Action,
     [Parameter(Mandatory=$true)][string]$ProjectPath,

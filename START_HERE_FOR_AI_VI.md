@@ -46,7 +46,7 @@ Nếu không cài Impeccable, APES tiếp tục dùng apes-ui-ux-review skill v�
 
 ## 4B. FlowPlan Windows (tùy chọn, hữu ích cho task nhiều bước)
 
-FlowPlan là bảng tiến độ và feedback, không phải agent thực thi. APES không tự tải/cài/chạy ứng dụng.
+FlowPlan là bảng quan sát tiến độ và feedback dành cho người dùng không chuyên, không phải nơi lưu kế hoạch chính hay agent thực thi. Project Brief, Master Plan và task-graph.json là nguồn chuẩn trong docs/engineering/apes/projects/<slug>/. FlowPlan chỉ nhận bản chiếu dễ hiểu từ kế hoạch đã kiểm định. APES không tự tải/cài/chạy ứng dụng.
 
 1. Tải bản portable Windows từ https://github.com/kimducanh27-cpu/flowplan-windows/releases/latest; đây là community build unsigned, không phải upstream official release. Verify checksum theo docs/FLOWPLAN-WINDOWS-INTEGRATION.md.
 2. Mở FlowPlan.exe, giữ WebView2Loader.dll cùng thư mục.
@@ -65,10 +65,13 @@ FlowPlan là bảng tiến độ và feedback, không phải agent thực thi. A
 ~~~
 
 5. Reload MCP Servers trong Antigravity, mở chat mới, yêu cầu agent gọi list_plans. Chỉ coi là connected sau khi có tool result thật.
-6. Dùng skill apes-flowplan-operations và prompt pack templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md:
-   - Preflight, không ghi dữ liệu.
-   - Plan/research rồi tạo board, dừng chờ DUYỆT KẾ HOẠCH.
-   - Sau approval, làm từng card: [TODO] → [DOING] → implement → test → review → [PASS]/[BLOCKED].
+6. Dùng theo đúng thứ tự:
+   - apes-project-manager tạo Project Brief, Master Plan và task-graph.json trong workspace; chạy Plan Quality Audit.
+   - apes-flowplan-projection tạo bản chiếu tiếng Việt từ các deliverable có ý nghĩa; không biến mỗi file edit/lệnh terminal thành card.
+   - apes-flowplan-operations xử lý MCP, feedback, card lifecycle và recovery.
+   - Prompt lập kế hoạch: templates/prompts/APES-PROJECT-MANAGER-WORKFLOW-VI.md; prompt vận hành bảng: templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md.
+   - Board nháp dùng [REVIEW] và dừng chờ DUYỆT KẾ HOẠCH đúng revision.
+   - Sau approval, chuyển card hợp lệ sang [TODO]; khi thực sự bắt đầu mới [DOING]. Sau test/review và evidence mới [PASS]/[BLOCKED].
    - Sau mỗi card cập nhật evidence rồi get_cards đọc lại xác minh.
    - Chỉ chuyển bước khi card [PASS] và dependencies hợp lệ.
 

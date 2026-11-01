@@ -2,7 +2,9 @@
 
 ## Purpose
 
-FlowPlan is an optional visual planning board for APES. APES remains the orchestrator and executor; FlowPlan stores and displays the task graph, card descriptions, file-change previews and user feedback.
+FlowPlan is an optional visual observation board for APES, especially for users who do not want to inspect technical project files. APES remains the planner and executor; FlowPlan presents a simplified view of meaningful tasks and user feedback.
+
+The canonical Project Brief, Master Plan and Task Graph live in the workspace under docs/engineering/apes/projects/<project-slug>/. FlowPlan is a projection of those artifacts, not the source of truth for scope, architecture or verified execution. See docs/PROJECT-PLANNING-AND-FLOWPLAN.md.
 
 This integration targets Antigravity Desktop on Windows 10/11 x64. APES does not download, install, auto-start or update the FlowPlan application.
 

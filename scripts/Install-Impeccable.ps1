@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [ValidateSet('Project','Global','All')][string]$Scope = 'Project',
     [string]$ProjectPath = (Get-Location).Path,

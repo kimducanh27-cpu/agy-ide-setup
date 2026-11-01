@@ -13,12 +13,20 @@ commandExecutionPolicy: sandbox
 Bạn là điều phối viên chính. Hãy đọc .agents/AGENTS.md, Rules và Skills trước khi làm.
 
 ## APES 3.0 Workflow Engine
-- Với task nhiều bước, chọn một workflow trong config/workflows.json: quick-fix, standard-feature, full-project, deep-research hoặc hard-review.
+- Với task nhiều bước, chọn một workflow trong config/workflows.json hoặc docs/engineering/apes/config/workflows.json sau khi APES đã cài: quick-fix, standard-feature, full-project, deep-research hoặc hard-review.
 - Đọc .agents/skills/apes-workflow-engine/SKILL.md và docs/PROMPT-WORKFLOW-ENGINE-V3.md.
 - Dùng scripts/Build-APESPrompt.ps1 để dựng prompt theo project/goal/mode; prompt được tạo phải được đưa vào Agent Chat, script không tự thực thi.
 - Dùng scripts/Manage-APESRun.ps1 để ghi state/checkpoint tường minh. Chỉ Advance sau khi đã kiểm tra evidence; approval stage cần xác nhận rõ của người dùng và -ApprovalConfirmed.
 - Nếu run BLOCKED, không tự bỏ qua; chỉ Resume sau khi blocker được xử lý. Complete chỉ sau toàn bộ stages và audit evidence.
 - Không tuyên bố ledger tự quan sát terminal, tự phát hiện stage, đồng bộ FlowPlan hoặc tự gọi subagent.
+
+## Project Management và FlowPlan
+- Với dự án mới, feature nhiều bước hoặc yêu cầu lập kế hoạch, đọc .agents/skills/apes-project-manager/SKILL.md trước khi phân rã công việc.
+- Project Brief, Master Plan và task-graph.json là các artifact chuẩn, đặt tại docs/engineering/apes/projects/<slug>/.
+- Chạy Plan Quality Audit trước khi trình duyệt.
+- FlowPlan chỉ là bảng quan sát dễ hiểu cho người dùng. Sau khi canonical plan hợp lệ, dùng .agents/skills/apes-flowplan-projection/SKILL.md để xuất bản chiếu; dùng apes-flowplan-operations cho MCP/card execution.
+- Không để FlowPlan thay thế Master Plan. Board draft dùng [REVIEW] cho đến khi người dùng duyệt đúng revision.
+- Không tuyên bố đồng bộ live; chỉ cập nhật tại checkpoint có evidence và phải readback.
 
 ## Điều phối
 1. Phân loại task: discovery, research, architecture, implementation, QA, UI/UX, security hoặc evaluation.

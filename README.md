@@ -30,6 +30,14 @@ $project = "D:\Projects\MyApp"
 
 Đọc [hướng dẫn engine](docs/PROMPT-WORKFLOW-ENGINE-V3.md) và [prompt nhanh](templates/prompts/APES-3.0-QUICKSTART-VI.md). Prompt Builder chỉ tạo nội dung; người dùng/agent đưa prompt vào Agent Chat. Run State chỉ ghi nhận checkpoint khi được gọi tường minh; không tự quan sát terminal, tự kiểm chứng evidence hoặc điều khiển native subagents.
 
+## Project Manager và FlowPlan — kế hoạch chính + bảng quan sát
+
+APES dùng `apes-project-manager` để tạo ba artifact chuẩn trong workspace: `PROJECT_BRIEF.md`, `MASTER_PLAN.md` và `task-graph.json` dưới `docs/engineering/apes/projects/<slug>/`. Master Plan giữ phạm vi, kiến trúc, milestone, task, dependency, owner, acceptance criteria, rủi ro và approval.
+
+FlowPlan chỉ là bản chiếu trực quan tiếng Việt để người không chuyên theo dõi dự án. `apes-flowplan-projection` chuyển các deliverable có ý nghĩa thành card dễ hiểu; `apes-flowplan-operations` thực hiện MCP, cập nhật trạng thái, feedback và recovery. Board draft dùng `[REVIEW]` cho đến khi người dùng duyệt đúng revision. Khi FlowPlan mất kết nối, Master Plan trong workspace vẫn còn nguyên và tiếp tục là nguồn chuẩn.
+
+Tài liệu: [kiến trúc Project Planning + FlowPlan](docs/PROJECT-PLANNING-AND-FLOWPLAN.md) · [Project Manager prompt pack](templates/prompts/APES-PROJECT-MANAGER-WORKFLOW-VI.md) · [FlowPlan prompt pack](templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md).
+
 APES tập trung điều phối vòng đời dự án. Các công cụ chuyên môn bên ngoài như Impeccable được tích hợp theo kiểu tùy chọn, không bị sao chép hoặc khóa phiên bản bên trong APES.
 
 ## Dùng nhanh — giao Agent tự cài
@@ -122,7 +130,7 @@ Kiểm tra config và local health:
 
 Sau đó reload MCP trong Antigravity, mở chat mới và yêu cầu agent gọi list_plans để xác minh kết nối thật.
 
-**Quy trình dùng đúng:** Research → tạo task graph → duyệt → [DOING] → implement → test/review → [PASS] kèm evidence → đọc lại card để xác minh → task tiếp theo. Nếu lỗi hoặc không xác minh được thì [BLOCKED]/[REVIEW] và dừng. FlowPlan hiện không có status field riêng; APES dùng prefix trong title. Xem docs/FLOWPLAN-WINDOWS-INTEGRATION.md và templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md để lấy prompt đầy đủ.
+**Quy trình dùng đúng:** Project Brief → Master Plan + Task Graph (nguồn chuẩn trong workspace) → Plan Quality Audit → FlowPlan draft [REVIEW] → người dùng duyệt đúng revision → FlowPlan [TODO] → khi thực thi thật mới [DOING] → test/review + evidence → [PASS]/[BLOCKED] và readback. FlowPlan là bảng quan sát dễ hiểu, không thay thế Master Plan và không tự theo dõi terminal/subagent theo thời gian thực. FlowPlan hiện không có status field riêng; APES dùng prefix trong title. Xem docs/PROJECT-PLANNING-AND-FLOWPLAN.md, docs/FLOWPLAN-WINDOWS-INTEGRATION.md, templates/prompts/APES-PROJECT-MANAGER-WORKFLOW-VI.md và templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md.
 
 ## Quy trình
 

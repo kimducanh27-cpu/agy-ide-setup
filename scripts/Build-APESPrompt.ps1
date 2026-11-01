@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)][ValidateSet('quick-fix','standard-feature','full-project','deep-research','hard-review')][string]$Workflow,
     [Parameter(Mandatory=$true)][string]$ProjectPath,

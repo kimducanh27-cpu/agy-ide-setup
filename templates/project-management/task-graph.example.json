@@ -1,0 +1,160 @@
+{
+  "schemaVersion": "1.0",
+  "project": {
+    "id": "example-app",
+    "name": "Example App",
+    "workflowId": "standard-feature"
+  },
+  "source": {
+    "briefPath": "docs/engineering/apes/projects/example-app/PROJECT_BRIEF.md",
+    "masterPlanPath": "docs/engineering/apes/projects/example-app/MASTER_PLAN.md",
+    "revision": "0.1",
+    "createdAt": "2026-11-01T00:00:00+07:00"
+  },
+  "planState": "READY_FOR_REVIEW",
+  "milestones": [
+    {
+      "id": "M1",
+      "title": "Làm rõ yêu cầu",
+      "outcome": "Mục tiêu và phạm vi đã được xác định",
+      "taskIds": ["T001", "T002", "T003"],
+      "entryCriteria": ["Đã nhận yêu cầu của người dùng"],
+      "exitCriteria": ["Brief và Master Plan đã được rà soát"],
+      "riskLevel": "LOW"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T001",
+      "title": "Kiểm tra hiện trạng dự án",
+      "cardType": "research",
+      "milestoneId": "M1",
+      "objective": "Nắm được cấu trúc và khả năng hiện có",
+      "why": "Tránh đề xuất xây lại chức năng đã có",
+      "deliverable": "Bản ghi discovery có đường dẫn nguồn",
+      "scope": {
+        "included": ["Đọc README", "Kiểm tra manifest và Git status"],
+        "excluded": ["Sửa code sản phẩm"]
+      },
+      "files": ["README.md"],
+      "owner": {
+        "agentId": "apes-project-analyst",
+        "responsibility": "Khảo sát read-only"
+      },
+      "reviewerIds": ["apes-harness-evaluator"],
+      "dependencies": [],
+      "acceptanceCriteria": [
+        {
+          "id": "AC-001",
+          "description": "Hiện trạng có dẫn chiếu file hoặc kết quả kiểm tra",
+          "verification": "Đọc lại discovery report và nguồn được trích"
+        }
+      ],
+      "verification": {
+        "methods": ["Read-only inspection"],
+        "commands": [],
+        "manualChecks": ["Đối chiếu đường dẫn và nội dung thực tế"]
+      },
+      "risks": [],
+      "userApprovalRequired": false,
+      "status": "NOT_STARTED",
+      "flowplan": {
+        "cardId": null,
+        "published": false,
+        "lastSyncedAt": null
+      }
+    },
+    {
+      "id": "T002",
+      "title": "Soạn kế hoạch dễ hiểu",
+      "cardType": "planning",
+      "milestoneId": "M1",
+      "objective": "Chuyển discovery thành Project Brief và Master Plan",
+      "why": "Tạo nguồn chuẩn trước khi hiển thị FlowPlan",
+      "deliverable": "Project Brief, Master Plan và Task Graph",
+      "scope": {
+        "included": ["Xác định phạm vi", "Milestone và tiêu chí nghiệm thu"],
+        "excluded": ["Triển khai sản phẩm"]
+      },
+      "files": [],
+      "owner": {
+        "agentId": "apes-orchestrator",
+        "responsibility": "Tổng hợp và lập kế hoạch"
+      },
+      "reviewerIds": ["apes-solution-architect"],
+      "dependencies": [
+        {
+          "taskId": "T001",
+          "reason": "Cần hiểu hiện trạng trước khi lập kế hoạch"
+        }
+      ],
+      "acceptanceCriteria": [
+        {
+          "id": "AC-002",
+          "description": "Brief và Master Plan có scope, deliverables, risks và verification",
+          "verification": "Plan Quality Audit"
+        }
+      ],
+      "verification": {
+        "methods": ["Review against Project Manager checklist"],
+        "commands": [],
+        "manualChecks": ["Kiểm tra tính nhất quán giữa brief, plan và graph"]
+      },
+      "risks": ["Yêu cầu còn thiếu có thể cần người dùng làm rõ"],
+      "userApprovalRequired": true,
+      "status": "NEEDS_REVIEW",
+      "flowplan": {
+        "cardId": null,
+        "published": false,
+        "lastSyncedAt": null
+      }
+    },
+    {
+      "id": "T003",
+      "title": "Duyệt kế hoạch",
+      "cardType": "planning",
+      "milestoneId": "M1",
+      "objective": "Người dùng quyết định có chấp thuận phạm vi và kế hoạch hay không",
+      "why": "Không bắt đầu triển khai khi chưa được duyệt",
+      "deliverable": "Approval record cho revision được trình",
+      "scope": {
+        "included": ["Đọc brief và master plan", "Xác nhận hoặc yêu cầu chỉnh sửa"],
+        "excluded": ["Thay đổi code"]
+      },
+      "files": ["docs/engineering/apes/projects/example-app/APPROVALS.md"],
+      "owner": {
+        "agentId": "user",
+        "responsibility": "Duyệt scope và kế hoạch"
+      },
+      "reviewerIds": [],
+      "dependencies": [
+        {
+          "taskId": "T002",
+          "reason": "Chỉ duyệt sau khi kế hoạch hoàn chỉnh và đã audit"
+        }
+      ],
+      "acceptanceCriteria": [
+        {
+          "id": "AC-003",
+          "description": "Có quyết định rõ ràng gắn với revision 0.1",
+          "verification": "Đọc approval record"
+        }
+      ],
+      "verification": {
+        "methods": ["Explicit user confirmation"],
+        "commands": [],
+        "manualChecks": ["Xác nhận nội dung người dùng đã duyệt đúng revision"]
+      },
+      "risks": [],
+      "userApprovalRequired": true,
+      "status": "NEEDS_REVIEW",
+      "flowplan": {
+        "cardId": null,
+        "published": false,
+        "lastSyncedAt": null
+      }
+    }
+  ],
+  "criticalPath": ["T001", "T002", "T003"],
+  "openQuestions": []
+}

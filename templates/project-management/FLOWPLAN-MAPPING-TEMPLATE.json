@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "projectId": "{{PROJECT_SLUG}}",
+  "masterPlanPath": "docs/engineering/apes/projects/{{PROJECT_SLUG}}/MASTER_PLAN.md",
+  "taskGraphPath": "docs/engineering/apes/projects/{{PROJECT_SLUG}}/task-graph.json",
+  "flowplanPlanId": null,
+  "lastReadbackAt": null,
+  "cards": [
+    {
+      "taskId": "T001",
+      "flowplanCardId": null,
+      "published": false,
+      "lastPublishedTitle": null,
+      "lastSyncedAt": null
+    }
+  ],
+  "notes": [
+    "FlowPlan is a visual projection, not the canonical plan.",
+    "Do not infer execution state from card existence or owner assignment."
+  ]
+}

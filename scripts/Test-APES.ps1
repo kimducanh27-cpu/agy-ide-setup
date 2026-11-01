@@ -1,4 +1,4 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
     [string]$ProjectPath = '',
     [switch]$CheckGlobal,
@@ -9,7 +9,7 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $failures = [System.Collections.Generic.List[string]]::new()
 $checks = 0
 $expectedAgentCount = 9
-$knownTools = @('view_file','grep_search','find_by_name','code_search','run_command')
+$knownTools = @('view_file','replace_file_content','grep_search','find_by_name','run_command')
 
 function Test-RequiredPath([string]$Path, [string]$Label) {
     $script:checks++
@@ -58,7 +58,13 @@ function Test-AgentFile([string]$Path) {
             }
         }
     }
-    if ($validName -and $validDescription -and $validSubagent -and $validMainAgent -and $validModel -and $validPolicy -and $validTools) {
+    $validInvokeSubagent = $true
+    if ($expectedName -eq 'apes-orchestrator') {
+        # Orchestrator omits tools to inherit runtime default capabilities including native invoke_subagent
+        $validInvokeSubagent = -not $toolSection.Success
+        if (-not $validInvokeSubagent) { $script:failures.Add("Orchestrator must omit tools to retain runtime default delegation capabilities: $Path") }
+    }
+    if ($validName -and $validDescription -and $validSubagent -and $validMainAgent -and $validModel -and $validPolicy -and $validTools -and $validInvokeSubagent) {
         Write-Host "PASS  Custom Agent metadata: $Path" -ForegroundColor Green
     } else {
         Write-Host "FAIL  Custom Agent metadata: $Path" -ForegroundColor Red
@@ -87,7 +93,21 @@ foreach ($item in @(
     @('scripts/Test-Impeccable.ps1','Optional Impeccable validator'),
     @('docs/IMPECCABLE-INTEGRATION.md','Impeccable integration guide'),
     @('docs/FLOWPLAN-WINDOWS-INTEGRATION.md','FlowPlan Windows integration guide'),
+    @('docs/PROJECT-PLANNING-AND-FLOWPLAN.md','Project planning and FlowPlan architecture'),
     @('templates/prompts/FLOWPLAN-WORKFLOW-PROMPTS-VI.md','FlowPlan Vietnamese prompt pack'),
+    @('templates/prompts/APES-PROJECT-MANAGER-WORKFLOW-VI.md','Project Manager Vietnamese prompt pack'),
+    @('templates/project-management/PROJECT-BRIEF-TEMPLATE.md','Project Brief template'),
+    @('templates/project-management/MASTER-PLAN-TEMPLATE.md','Master Plan template'),
+    @('templates/project-management/task-graph.schema.json','Canonical task graph schema'),
+    @('templates/project-management/task-graph.example.json','Task graph example'),
+    @('templates/project-management/FLOWPLAN-MAPPING-TEMPLATE.json','FlowPlan mapping template'),
+    @('templates/project-management/DECISIONS-TEMPLATE.md','Project decisions template'),
+    @('templates/project-management/RISKS-TEMPLATE.md','Project risks template'),
+    @('templates/project-management/APPROVALS-TEMPLATE.md','Project approvals template'),
+    @('.agents/skills/apes-project-manager/SKILL.md','Project Manager planning skill'),
+    @('.agents/skills/apes-flowplan-projection/SKILL.md','FlowPlan projection skill'),
+    @('global/skills/apes-project-manager/SKILL.md','Global Project Manager skill'),
+    @('global/skills/apes-flowplan-projection/SKILL.md','Global FlowPlan projection skill'),
     @('scripts/Install-FlowPlan-MCP.ps1','Optional FlowPlan MCP config helper'),
     @('scripts/Test-FlowPlan-MCP.ps1','Optional FlowPlan MCP validator'),
     @('.agents/skills/apes-flowplan-operations/SKILL.md','FlowPlan operations skill'),
@@ -97,6 +117,70 @@ foreach ($item in @(
     @('global/AGENTS.md','Global instructions'),
     @('.agents/AGENTS.md','Workspace instructions')
 )) { Test-RequiredPath (Join-Path $repoRoot $item[0]) $item[1] }
+
+# Validate canonical planning JSON artifacts are syntactically valid and identify the expected schema.
+try {
+    $taskGraphSchema = Get-Content -LiteralPath (Join-Path $repoRoot 'templates/project-management/task-graph.schema.json') -Raw | ConvertFrom-Json
+    $flowPlanMapping = Get-Content -LiteralPath (Join-Path $repoRoot 'templates/project-management/FLOWPLAN-MAPPING-TEMPLATE.json') -Raw | ConvertFrom-Json
+    $exampleGraph = Get-Content -LiteralPath (Join-Path $repoRoot 'templates/project-management/task-graph.example.json') -Raw | ConvertFrom-Json
+    $taskIds = @($exampleGraph.tasks | ForEach-Object { $_.id })
+    $milestoneIds = @($exampleGraph.milestones | ForEach-Object { $_.id })
+    $invalidDependencies = @($exampleGraph.tasks | ForEach-Object { $_.dependencies } | Where-Object { $_.taskId -notin $taskIds })
+    $invalidMilestoneRefs = @($exampleGraph.tasks | Where-Object { $_.milestoneId -notin $milestoneIds })
+    $duplicateTaskIds = @($taskIds | Group-Object | Where-Object Count -gt 1)
+    $invalidMilestoneTasks = @($exampleGraph.milestones | ForEach-Object { $_.taskIds } | Where-Object { $_ -notin $taskIds })
+    $invalidCriticalPath = @($exampleGraph.criticalPath | Where-Object { $_ -notin $taskIds })
+
+    # Kahn topological traversal: every task must be visited for the graph to be acyclic.
+    $indegree = @{}
+    $adjacency = @{}
+    foreach ($taskId in $taskIds) {
+        $indegree[$taskId] = 0
+        $adjacency[$taskId] = [System.Collections.Generic.List[string]]::new()
+    }
+    foreach ($task in $exampleGraph.tasks) {
+        foreach ($dependency in $task.dependencies) {
+            if ($taskIds -contains $dependency.taskId) {
+                $adjacency[$dependency.taskId].Add($task.id)
+                $indegree[$task.id]++
+            }
+        }
+    }
+    $queue = [System.Collections.Generic.Queue[string]]::new()
+    foreach ($taskId in $taskIds) {
+        if ($indegree[$taskId] -eq 0) { $queue.Enqueue($taskId) }
+    }
+    $visitedTaskCount = 0
+    while ($queue.Count -gt 0) {
+        $currentTask = $queue.Dequeue()
+        $visitedTaskCount++
+        foreach ($dependentTask in $adjacency[$currentTask]) {
+            $indegree[$dependentTask]--
+            if ($indegree[$dependentTask] -eq 0) { $queue.Enqueue($dependentTask) }
+        }
+    }
+    $hasDependencyCycle = $visitedTaskCount -ne $taskIds.Count
+
+    $checks++
+    if ($taskGraphSchema.'$schema' -eq 'https://json-schema.org/draft/2020-12/schema' -and
+        $taskGraphSchema.title -eq 'APES Canonical Task Graph' -and
+        $taskGraphSchema.properties.schemaVersion.const -eq '1.0' -and
+        $flowPlanMapping.schemaVersion -eq '1.0' -and
+        $exampleGraph.schemaVersion -eq '1.0' -and
+        $invalidDependencies.Count -eq 0 -and
+        $invalidMilestoneRefs.Count -eq 0 -and
+        $invalidMilestoneTasks.Count -eq 0 -and
+        $invalidCriticalPath.Count -eq 0 -and
+        $duplicateTaskIds.Count -eq 0 -and
+        -not $hasDependencyCycle) {
+        Write-Host 'PASS  Project planning JSON, references and acyclic example task graph' -ForegroundColor Green
+    } else {
+        throw 'Project planning schema, mapping template or example graph has invalid metadata, references or dependency cycle.'
+    }
+} catch {
+    $failures.Add("Project planning JSON validation: $($_.Exception.Message)")
+    Write-Host "FAIL  Project planning JSON validation: $($_.Exception.Message)" -ForegroundColor Red
+}
 
 # Parse every PowerShell script without executing it. CI therefore validates syntax
 # without downloading the optional Impeccable package or changing a developer machine.
@@ -191,6 +275,17 @@ if ($CheckGlobal) {
 if ($ProjectPath) {
     $project = (Resolve-Path -LiteralPath $ProjectPath).Path
     Test-RequiredPath (Join-Path $project '.agents/AGENTS.md') 'Installed workspace AGENTS.md'
+    $installedDocRoot = Join-Path $project 'docs/engineering/apes'
+    Test-RequiredPath (Join-Path $installedDocRoot 'config/workflows.json') 'Installed APES workflow catalog'
+    Test-RequiredPath (Join-Path $installedDocRoot 'PROJECT-PLANNING-AND-FLOWPLAN.md') 'Installed project planning guide'
+    Test-RequiredPath (Join-Path $installedDocRoot 'FLOWPLAN-WINDOWS-INTEGRATION.md') 'Installed FlowPlan integration guide'
+    foreach ($promptName in @('APES-PROJECT-MANAGER-WORKFLOW-VI.md','FLOWPLAN-WORKFLOW-PROMPTS-VI.md')) {
+        Test-RequiredPath (Join-Path $installedDocRoot ('prompts/' + $promptName)) "Installed prompt $promptName"
+    }
+    foreach ($templateFile in Get-ChildItem (Join-Path $repoRoot 'templates/project-management') -Recurse -File) {
+        $relativeTemplate = $templateFile.FullName.Substring((Join-Path $repoRoot 'templates/project-management').Length).TrimStart('\','/')
+        Test-RequiredPath (Join-Path $installedDocRoot ('templates/project-management/' + $relativeTemplate)) "Installed project template $relativeTemplate"
+    }
     foreach ($file in $repoRules) { Test-RequiredPath (Join-Path $project ('.agents/rules/' + $file.Name)) "Workspace rule $($file.Name)" }
     foreach ($file in $repoSkills) {
         $relative = $file.FullName.Substring((Join-Path $repoRoot '.agents/skills').Length).TrimStart('\','/')
