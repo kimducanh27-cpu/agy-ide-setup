@@ -3,9 +3,28 @@ param(
     [string]$BackupPath = '',
     [switch]$Force,
     [switch]$DryRun,
-    [string[]]$Only = @()
+    [string[]]$Only = @(),
+    # A restore writes to whatever path the manifest names. Without a boundary, a manifest
+    # from anywhere — an old backup, a colleague's machine, a tampered file — can write to
+    # any absolute path on disk. Every entry must land inside one of the allowed roots.
+    [string]$ProjectPath = (Get-Location).Path
 )
 $ErrorActionPreference = 'Stop'
+. (Join-Path $PSScriptRoot 'lib\APESManifest.ps1')
+
+$allowedRoots = @()
+if (-not [string]::IsNullOrWhiteSpace($ProjectPath)) {
+    $resolvedProject = try { (Resolve-Path -LiteralPath $ProjectPath -ErrorAction Stop).Path } catch { $null }
+    if ($resolvedProject) { $allowedRoots += $resolvedProject }
+}
+$allowedRoots += (Join-Path $HOME '.gemini\config')
+
+function Test-RestorePathAllowed([string]$Path) {
+    foreach ($root in $script:allowedRoots) {
+        if (Test-APESPathInside -Path $Path -Root $root) { return $true }
+    }
+    return $false
+}
 
 $backupBase = if ($env:LOCALAPPDATA) {
     Join-Path $env:LOCALAPPDATA 'APES\backups'
@@ -112,6 +131,12 @@ foreach ($entry in $entries) {
     $original = [string]$entry.original
     $backupFile = [string]$entry.backup
     try {
+        if (-not (Test-RestorePathAllowed $original)) {
+            $failures.Add("$original -> ngoài phạm vi cho phép, đã bỏ qua")
+            Write-Host "BLOCKED: $original — ngoài phạm vi cho phép" -ForegroundColor Red
+            Write-Host "         Cho phép: $($allowedRoots -join ' | ')" -ForegroundColor DarkGray
+            continue
+        }
         $parent = Split-Path -Parent $original
         if ($parent -and -not (Test-Path -LiteralPath $parent)) {
             New-Item -ItemType Directory -Force -Path $parent | Out-Null
