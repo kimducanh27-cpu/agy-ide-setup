@@ -12,4 +12,4 @@ description: "APES engineering invariants for all work in this workspace."
 - Không đưa secrets vào source, log, screenshot, prompt hoặc Git.
 - Không tuyên bố test/build/security check PASS nếu chưa chạy lệnh và đọc exit code/output.
 - Tách kết quả VERIFIED, INFERRED, UNKNOWN. Ghi nguồn khi dùng thông tin bên ngoài.
-- Không triển khai production, tạo tài nguyên tính phí, thay đổi quyền hoặc tác động dữ liệu thật nếu chưa có sự đồng ýrõ ràng.
+- Không triển khai production, tạo tài nguyên tính phí, thay đổi quyền hoặc tác động dữ liệu thật nếu chưa có sự đồng ý rõ ràng.

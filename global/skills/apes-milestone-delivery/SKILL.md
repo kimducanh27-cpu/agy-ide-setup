@@ -16,4 +16,4 @@ Khi thực hiện feature, bug fix, refactor hoặc release đã được duyệ
 6. Tạo diff summary; yêu cầu review độc lập.
 7. Đưa scorecard cho evaluator.
 8. Nếu reject: sửa tối đa 3 vòng cùng lỗi; quá giới hạn thì dừng và báo.
-9. Cập nhật milestone và memory bằng bái học có thể xác minh.
+9. Cập nhật milestone và memory bằng bài học có thể xác minh.
