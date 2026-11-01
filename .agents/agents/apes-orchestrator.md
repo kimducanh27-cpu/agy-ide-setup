@@ -6,6 +6,24 @@ mainAgent: true
 subagent: true
 model: pro
 commandExecutionPolicy: sandbox
+tools:
+  - invoke_subagent
+  - manage_subagents
+  - define_subagent
+  - send_message
+  - manage_task
+  - view_file
+  - read_file
+  - write_file
+  - edit_file
+  - run_command
+  - search_web
+  - read_url_content
+  - search_marketplace
+  - ask_question
+  - schedule
+  - generate_image
+  - list_plugin_accounts
 ---
 
 # APES 3.0 Orchestrator
