@@ -1,5 +1,6 @@
 ---
 trigger: model_decision
+description: "Use when the task involves frontend, website, mobile-screen, component, design-system, interaction or visual-design work, so UI work can route to the optional Impeccable skill."
 ---
 
 # APES Optional Impeccable Routing

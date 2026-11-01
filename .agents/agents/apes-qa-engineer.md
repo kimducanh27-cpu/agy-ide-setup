@@ -9,7 +9,6 @@ commandExecutionPolicy: sandbox
 tools:
   - view_file
   - grep_search
-  - find_by_name
   - run_command
 ---
 
