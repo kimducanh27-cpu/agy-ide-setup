@@ -2,7 +2,11 @@
 param(
     [ValidateSet('Project','Global','All')][string]$Scope = 'Project',
     [string]$ProjectPath = (Get-Location).Path,
-    [ValidatePattern('^skill-v[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version = 'skill-v4.8.0'
+    [ValidatePattern('^skill-v[0-9]+\.[0-9]+\.[0-9]+$')][string]$Version = 'skill-v4.8.0',
+    # Pin to the commit the tag pointed at, not the tag itself. A tag is a mutable label:
+    # upstream can move or force-push it, and this installer would then fetch different
+    # content under the same version string. 414603b is skill-v4.8.0 (2026-10-26).
+    [string]$Ref = '414603bf14c7a344edb466bb1f85690c77ce8b7d'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -18,7 +22,7 @@ $backupBase = if ($env:LOCALAPPDATA) {
     Join-Path $env:TEMP 'APES\backups'
 }
 $backupRoot = Join-Path $backupBase ('impeccable-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
-$downloadUrl = 'https://codeload.github.com/pbakaus/impeccable/zip/refs/tags/' + $Version
+$downloadUrl = 'https://codeload.github.com/pbakaus/impeccable/zip/' + $Ref
 
 function Install-ImpeccableTarget([string]$SourceSkill,[string]$Destination,[string]$Label) {
     $parent = Split-Path -Parent $Destination
@@ -61,7 +65,7 @@ try {
 
     # Windows PowerShell 5.1: use TLS 1.2 for this HTTPS download in this process only.
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-    Write-Host "Downloading Impeccable upstream tag $Version ..." -ForegroundColor Cyan
+    Write-Host "Downloading Impeccable $Version at commit $($Ref.Substring(0,7)) ..." -ForegroundColor Cyan
     Invoke-WebRequest -Uri $downloadUrl -OutFile $zipPath -UseBasicParsing
     Expand-Archive -LiteralPath $zipPath -DestinationPath $extractRoot -Force
 

@@ -60,6 +60,18 @@ $project = "D:\Projects\MyApp"
 & "$apes\scripts\Test-APES.ps1" -ProjectPath $project -CheckGlobal
 ~~~
 
+Từ 3.2, mặc định của `Install-APES.ps1` là `-Scope Project`. Chạy không tham số chỉ cài vào một dự án; muốn toàn máy phải nói rõ `-Scope Global` hoặc `-Scope All`.
+
+## Nâng cấp lên 3.2
+
+~~~powershell
+& "$apes\scripts\Update-APES.ps1" -ProjectPath $project -DryRun   # xem trước, không ghi gì
+& "$apes\scripts\Update-APES.ps1" -ProjectPath $project            # áp dụng
+& "$apes\scripts\Test-APESUpgrade.ps1"                             # kiểm chứng đường nâng cấp
+~~~
+
+File anh sửa tay **được giữ nguyên** khi nâng cấp và được in ra danh sách. File APES không còn dùng bị báo là mồ côi, chỉ xoá khi có `-Prune`. Chi tiết: [docs/UPGRADE-3.2.md](docs/UPGRADE-3.2.md).
+
 ## Những gì được cài
 
 | Hạng mục | Global | Workspace |
@@ -104,7 +116,7 @@ Tuỳ chọn:
 - Scope Project: chỉ workspace hiện tại.
 - Scope Global: áp dụng cho các workspace Antigravity trên máy.
 - Scope All: cả global và workspace.
-- Mặc định script ghim upstream tag skill-v4.8.0; có thể chọn tag khác sau khi đã review release tương ứng bằng tham số Version.
+- Mặc định script ghim **commit 414603b** (tag `skill-v4.8.0` trỏ tới), không ghim theo tag. Tag là nhãn có thể bị di chuyển; commit thì không.
 
 **Đường dẫn có chủ ý khác nhau:** APES dùng .agents/ (số nhiều); build Antigravity của Impeccable dùng .agent/ (số ít). Không đổi tên hoặc gộp hai thư mục.
 

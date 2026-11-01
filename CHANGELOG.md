@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.2.0 — Safe upgrade
+
+A release with no new capability. It fixes one class of failure: upgrading APES could destroy work the user had done, and could leave retired files silently active.
+
+- **Install records what it wrote.** `apes-install.json` gains `schemaVersion: 2` and a `files` array of path plus SHA-256 for every installed file (75 on a project install). Hashes are computed over CRLF-normalised content — a raw byte hash reports every file as user-modified after a git checkout on Windows.
+- **`Update-APES.ps1`** compares manifest, disk and the new release, then applies three rules: unchanged files update, hand-edited files are **preserved** and reported (`-Force` to override), files no longer shipped are reported as orphans (`-Prune` to remove). `-DryRun` writes nothing.
+- **The manifest records what APES installed, not what is on disk.** Recording the post-edit hash would adopt the user's edit as ours, and the next update would treat it as unmodified and overwrite it. Found by the new regression test, not by reading the code.
+- **Unpruned orphans stay on the record.** Dropping them made a later `-Prune` find nothing to do, leaving the retired rule active forever — the same defect in a new shape.
+- **Migration from 3.0:** with no manifest, the updater adopts every existing file that also exists in the new release. Without adoption every file looks user-modified and nothing can ever be upgraded.
+- **`Install-APES.ps1` defaults to `-Scope Project`.** Running it with no arguments used to write into the current directory *and* `~/.gemini/config`, which is how a machine-wide config was overwritten by accident.
+- **`Restore-APES.ps1` refuses paths outside the project and `~/.gemini/config`.** It restored to whatever absolute path a manifest named; a manifest from another machine could write anywhere.
+- **Backup names no longer collide.** Flattening a path to a file name mapped `C:\a\b.md` and `C:\a_b.md` to the same backup slot; a short path hash now keeps them distinct.
+- **`Install-Impeccable.ps1` pins to commit `414603b`** instead of tag `skill-v4.8.0`. A tag is a mutable label; upstream can move it and the installer would fetch different content under the same version.
+- **`Test-APESUpgrade.ps1`** — 13 assertions covering the whole path: install, hand edit survives, orphan reported but not deleted, orphan record persists, prune removes it, dry run is inert. Runs in about 20 seconds and cleans up after itself.
+
+Validator: 123 checks / 0 failures (was 117).
+
+
 ## Unreleased — Optional mattpocock/skills integration
 
 - Add `scripts/Install-MattSkills.ps1` and `scripts/Test-MattSkills.ps1`, plus `docs/MATT-SKILLS-INTEGRATION.md`.
