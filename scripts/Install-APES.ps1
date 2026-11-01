@@ -5,6 +5,7 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$apesVersion = (Get-Content (Join-Path $repoRoot 'VERSION') -Raw).Trim()
 $backupRoot = Join-Path $env:LOCALAPPDATA (Join-Path 'APES\backups' (Get-Date -Format 'yyyyMMdd-HHmmss'))
 
 function Backup-IfExists([string]$Path) {
@@ -75,8 +76,11 @@ function Install-Project {
     }
     $workflowConfigDestination = Join-Path $docRoot 'config\workflows.json'
     Copy-NamespaceFile (Join-Path $repoRoot 'config\workflows.json') $workflowConfigDestination
-    Copy-NamespaceFile (Join-Path $repoRoot 'docs\PROJECT-PLANNING-AND-FLOWPLAN.md') (Join-Path $docRoot 'PROJECT-PLANNING-AND-FLOWPLAN.md')
-    Copy-NamespaceFile (Join-Path $repoRoot 'docs\FLOWPLAN-WINDOWS-INTEGRATION.md') (Join-Path $docRoot 'FLOWPLAN-WINDOWS-INTEGRATION.md')
+    # Copy every top-level doc so that any guide an agent or skill tells the agent to read
+    # is present in the workspace. A hardcoded list silently drifts behind new documentation.
+    foreach ($docFile in Get-ChildItem (Join-Path $repoRoot 'docs') -Filter '*.md' -File) {
+        Copy-NamespaceFile $docFile.FullName (Join-Path $docRoot $docFile.Name)
+    }
     $promptRoot = Join-Path $repoRoot 'templates\prompts'
     $promptDestination = Join-Path $docRoot 'prompts'
     foreach ($promptName in @('APES-PROJECT-MANAGER-WORKFLOW-VI.md','FLOWPLAN-WORKFLOW-PROMPTS-VI.md')) {
@@ -84,7 +88,7 @@ function Install-Project {
     }
     $marker = Join-Path $agentRoot 'apes-install.json'
     $markerContent = [ordered]@{
-        version = (Get-Content (Join-Path $repoRoot 'VERSION') -Raw).Trim()
+        version = $apesVersion
         installedAt = (Get-Date).ToString('o')
         source = 'https://github.com/kimducanh27-cpu/agy-ide-setup'
         scope = 'Project'
@@ -95,7 +99,7 @@ function Install-Project {
     Copy-NamespaceFile $temp $marker
     Remove-Item -LiteralPath $temp -Force
 }
-Write-Host "APES 2.1 installer — Scope: $Scope" -ForegroundColor Cyan
+Write-Host "APES $apesVersion installer — Scope: $Scope" -ForegroundColor Cyan
 if ($Scope -in @('Global','All')) { Install-Global }
 if ($Scope -in @('Project','All')) { Install-Project }
 Write-Host "Hoàn tất. Backup (nếu có): $backupRoot" -ForegroundColor Green

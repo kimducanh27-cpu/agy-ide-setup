@@ -25,33 +25,44 @@ function Get-Frontmatter([string]$Path) {
 function Test-RuleFile([string]$Path) {
     $script:checks++
     $frontmatter = Get-Frontmatter $Path
-    $valid = ($null -ne $frontmatter) -and ($frontmatter -match '(?m)^trigger:\s*(always_on|model_decision|glob|manual)\s*$')
+    $valid = ($null -ne $frontmatter) -and ($frontmatter -match '(?m)^trigger:[ \t]*(always_on|model_decision|glob|manual)[ \t]*\r?$')
     if ($valid) { Write-Host "PASS  Rule metadata: $Path" -ForegroundColor Green }
     else { Write-Host "FAIL  Rule metadata: $Path" -ForegroundColor Red; $script:failures.Add("Invalid rule: $Path") }
 }
 function Test-SkillFile([string]$Path) {
     $script:checks++
     $frontmatter = Get-Frontmatter $Path
-    $hasName = ($null -ne $frontmatter) -and ($frontmatter -match '(?m)^name:\s*[a-z0-9-]+\s*$')
-    $hasDescription = ($null -ne $frontmatter) -and ($frontmatter -match '(?m)^description:\s*.+$')
+    $hasName = ($null -ne $frontmatter) -and ($frontmatter -match '(?m)^name:[ \t]*[a-z0-9-]+[ \t]*\r?$')
+    $hasDescription = ($null -ne $frontmatter) -and ($frontmatter -match '(?m)^description:[ \t]*.+$')
     if ($hasName -and $hasDescription) { Write-Host "PASS  Skill metadata: $Path" -ForegroundColor Green }
     else { Write-Host "FAIL  Skill metadata: $Path" -ForegroundColor Red; $script:failures.Add("Invalid skill: $Path") }
+}
+function Test-DocumentField([string]$Path, [string]$Field, [string]$Label) {
+    $script:checks++
+    $value = ''
+    if (Test-Path -LiteralPath $Path -PathType Leaf) {
+        # [ \t] instead of \s: \s also matches CRLF and would capture the following line.
+        $match = [regex]::Match((Get-Content -LiteralPath $Path -Raw), '(?m)^- ' + [regex]::Escape($Field) + ':[ \t]*(?<value>[^\r\n]*)')
+        if ($match.Success) { $value = $match.Groups['value'].Value.Trim() }
+    }
+    if ($value.Length -gt 0) { Write-Host "PASS  $Label" -ForegroundColor Green }
+    else { Write-Host "FAIL  $Label" -ForegroundColor Red; $script:failures.Add($Label) }
 }
 function Test-AgentFile([string]$Path) {
     $script:checks++
     $frontmatter = Get-Frontmatter $Path
     if ($null -eq $frontmatter) { $script:failures.Add("Missing agent frontmatter: $Path"); return }
     $expectedName = [IO.Path]::GetFileNameWithoutExtension($Path)
-    $validName = $frontmatter -match ("(?m)^name:\s*" + [regex]::Escape($expectedName) + "\s*$")
-    $validDescription = $frontmatter -match '(?m)^description:\s*.+$'
-    $validSubagent = $frontmatter -match '(?m)^subagent:\s*true\s*$'
-    $validMainAgent = $frontmatter -match '(?m)^mainAgent:\s*(true|false)\s*$'
-    $validModel = $frontmatter -match '(?m)^model:\s*(inherit|flash|pro)\s*$'
-    $validPolicy = $frontmatter -match '(?m)^commandExecutionPolicy:\s*(off|auto|eager|sandbox)\s*$'
+    $validName = $frontmatter -match ("(?m)^name:[ \t]*" + [regex]::Escape($expectedName) + "[ \t]*\r?$")
+    $validDescription = $frontmatter -match '(?m)^description:[ \t]*.+$'
+    $validSubagent = $frontmatter -match '(?m)^subagent:[ \t]*true[ \t]*\r?$'
+    $validMainAgent = $frontmatter -match '(?m)^mainAgent:[ \t]*(true|false)[ \t]*\r?$'
+    $validModel = $frontmatter -match '(?m)^model:[ \t]*(inherit|flash|pro)[ \t]*\r?$'
+    $validPolicy = $frontmatter -match '(?m)^commandExecutionPolicy:[ \t]*(off|auto|eager|sandbox)[ \t]*\r?$'
     $validTools = $true
     $toolSection = [regex]::Match($frontmatter, '(?ms)^tools:\s*\r?\n(?<items>(?:[ \t]+-[^\r\n]*\r?\n?)*)')
     if ($toolSection.Success) {
-        foreach ($tool in [regex]::Matches($toolSection.Groups['items'].Value, '(?m)^\s*-\s*([a-zA-Z0-9_]+)\s*$')) {
+        foreach ($tool in [regex]::Matches($toolSection.Groups['items'].Value, '(?m)^[ \t]*-[ \t]*([a-zA-Z0-9_]+)[ \t]*\r?$')) {
             if ($knownTools -notcontains $tool.Groups[1].Value) {
                 $validTools = $false
                 $script:failures.Add("Unknown tool '$($tool.Groups[1].Value)' in $Path")
@@ -197,6 +208,78 @@ foreach ($scriptFile in Get-ChildItem (Join-Path $repoRoot 'scripts') -Filter '*
     }
 }
 
+# Documentation must point at files that actually exist. Guards the class of defect where a
+# path is renamed or a command loses a backslash and nobody notices until a user copies it.
+$docFiles = @()
+$docFiles += Get-ChildItem (Join-Path $repoRoot 'docs') -Recurse -Filter '*.md' -File
+$docFiles += Get-ChildItem (Join-Path $repoRoot 'templates') -Recurse -Filter '*.md' -File
+# CHANGELOG quotes historical paths on purpose; it is a record, not an instruction.
+$docFiles += Get-ChildItem $repoRoot -Filter '*.md' -File | Where-Object { $_.Name -ne 'CHANGELOG.md' }
+
+$brokenCommands = @()
+foreach ($match in (Select-String -Path $docFiles.FullName -Pattern '\.scripts[A-Za-z]')) {
+    $brokenCommands += "mangled script path at $($match.Filename):$($match.LineNumber)"
+}
+foreach ($match in (Select-String -Path $docFiles.FullName -Pattern "'[A-Za-z0-9_.-]+\\\\")) {
+    $brokenCommands += "double backslash in path at $($match.Filename):$($match.LineNumber)"
+}
+$checks++
+if ($brokenCommands.Count -eq 0) { Write-Host 'PASS  Documented commands are copy-paste safe' -ForegroundColor Green }
+else {
+    Write-Host 'FAIL  Documented commands contain broken paths' -ForegroundColor Red
+    foreach ($broken in $brokenCommands) { $failures.Add($broken) }
+}
+
+# Every referenced path must resolve directly, or through the mapping the installer applies.
+$referenceSources = @()
+$referenceSources += Get-ChildItem (Join-Path $repoRoot '.agents') -Recurse -Filter '*.md' -File
+$referenceSources += Get-ChildItem (Join-Path $repoRoot 'global') -Recurse -Filter '*.md' -File
+$referenceSources += $docFiles
+$referencePattern = '(?<![\w./~-])(?:docs|templates|config|scripts)/[A-Za-z0-9._/-]+\.(?:md|json|ps1)'
+$installedRoot = 'docs/engineering/apes/'
+$installMapping = [ordered]@{
+    'config/'                       = 'config/'
+    'templates/project-management/' = 'templates/project-management/'
+    'prompts/'                      = 'templates/prompts/'
+    'bootstrap/'                    = 'templates/engineering/bootstrap/'
+}
+$deadReferences = @()
+foreach ($file in $referenceSources) {
+    $lineNumber = 0
+    foreach ($line in (Get-Content -LiteralPath $file.FullName)) {
+        $lineNumber++
+        foreach ($match in [regex]::Matches($line, $referencePattern)) {
+            $reference = $match.Value
+            if ($reference -match '[<>]') { continue }
+            if (Test-Path -LiteralPath (Join-Path $repoRoot $reference)) { continue }
+            if ($reference -like ($installedRoot + 'projects/*')) { continue }
+            $resolved = $false
+            if ($reference.StartsWith($installedRoot)) {
+                $tail = $reference.Substring($installedRoot.Length)
+                foreach ($key in $installMapping.Keys) {
+                    if ($tail.StartsWith($key)) {
+                        $candidate = $installMapping[$key] + $tail.Substring($key.Length)
+                        if (Test-Path -LiteralPath (Join-Path $repoRoot $candidate)) { $resolved = $true }
+                        break
+                    }
+                }
+                if (-not $resolved) {
+                    foreach ($sourcePrefix in @('docs/', 'templates/engineering/')) {
+                        if (Test-Path -LiteralPath (Join-Path $repoRoot ($sourcePrefix + $tail))) { $resolved = $true }
+                    }
+                }
+            }
+            if (-not $resolved) { $deadReferences += "$($file.Name):$lineNumber -> $reference" }
+        }
+    }
+}
+$checks++
+if ($deadReferences.Count -eq 0) { Write-Host 'PASS  All referenced repository paths resolve' -ForegroundColor Green }
+else {
+    Write-Host 'FAIL  Documentation references paths that do not exist' -ForegroundColor Red
+    foreach ($dead in $deadReferences) { $failures.Add("Unresolved reference: $dead") }
+}
+
 # Validate the workflow catalog and execute a temporary Prompt Builder + state-ledger smoke test.
 try {
     $catalog = Get-Content -LiteralPath (Join-Path $repoRoot 'config/workflows.json') -Raw | ConvertFrom-Json
@@ -254,7 +337,7 @@ if ($repoSkills.Count -lt 20) { $failures.Add("Expected at least 20 skills; foun
 $repoAgents = @(Get-ChildItem (Join-Path $repoRoot '.agents/agents') -Filter '*.md' -File)
 if ($repoAgents.Count -ne $expectedAgentCount) { $failures.Add("Expected $expectedAgentCount workspace agents; found $($repoAgents.Count).") }
 foreach ($file in $repoAgents) { Test-AgentFile $file.FullName }
-$primaryAgents = @($repoAgents | Where-Object { (Get-Frontmatter $_.FullName) -match '(?m)^mainAgent:\s*true\s*$' })
+$primaryAgents = @($repoAgents | Where-Object { (Get-Frontmatter $_.FullName) -match '(?m)^mainAgent:[ \t]*true[ \t]*\r?$' })
 if ($primaryAgents.Count -ne 1 -or $primaryAgents[0].BaseName -ne 'apes-orchestrator') {
     $failures.Add('Exactly one primary agent named apes-orchestrator is required.')
 }
@@ -279,6 +362,18 @@ if ($ProjectPath) {
     Test-RequiredPath (Join-Path $installedDocRoot 'config/workflows.json') 'Installed APES workflow catalog'
     Test-RequiredPath (Join-Path $installedDocRoot 'PROJECT-PLANNING-AND-FLOWPLAN.md') 'Installed project planning guide'
     Test-RequiredPath (Join-Path $installedDocRoot 'FLOWPLAN-WINDOWS-INTEGRATION.md') 'Installed FlowPlan integration guide'
+
+    # Any top-level docs/<name>.md that an installed agent or skill tells the agent to read
+    # must exist inside the workspace after installation, otherwise the instruction is dead.
+    $engineDocNames = @()
+    foreach ($file in (Get-ChildItem (Join-Path $project '.agents') -Recurse -Filter '*.md' -File)) {
+        foreach ($match in [regex]::Matches((Get-Content -LiteralPath $file.FullName -Raw), 'docs/([A-Za-z0-9._-]+\.md)')) {
+            if ($engineDocNames -notcontains $match.Groups[1].Value) { $engineDocNames += $match.Groups[1].Value }
+        }
+    }
+    foreach ($engineDoc in $engineDocNames) {
+        Test-RequiredPath (Join-Path $installedDocRoot $engineDoc) "Installed engine doc referenced by agents $engineDoc"
+    }
     foreach ($promptName in @('APES-PROJECT-MANAGER-WORKFLOW-VI.md','FLOWPLAN-WORKFLOW-PROMPTS-VI.md')) {
         Test-RequiredPath (Join-Path $installedDocRoot ('prompts/' + $promptName)) "Installed prompt $promptName"
     }
@@ -300,10 +395,17 @@ if ($ProjectPath) {
             Test-RequiredPath (Join-Path $bootstrap $name) "Bootstrap document $name"
         }
         Test-RequiredPath (Join-Path $project 'docs/engineering/apes/agent-routing.md') 'Agent routing guide'
+        # Existence alone is not a gate: the installer ships empty templates to these exact
+        # paths, so require evidence that a human actually filled the pre-code documents.
+        $briefPath = Join-Path $bootstrap '00-project-brief.md'
+        foreach ($field in @('Problem / opportunity','Project name','Target users','Acceptance criteria')) {
+            Test-DocumentField $briefPath $field "Project Brief field filled: $field"
+        }
+        Test-DocumentField (Join-Path $bootstrap '02-architecture.md') 'Proposed stack' 'Architecture records a proposed stack'
         if ($Stage -eq 'Approved') {
             $approval = Join-Path $bootstrap '06-approval.md'
             $script:checks++
-            if ((Test-Path -LiteralPath $approval) -and ((Get-Content -LiteralPath $approval -Raw) -match '(?m)^- Decision:\s*APPROVED\s*$')) {
+            if ((Test-Path -LiteralPath $approval) -and ((Get-Content -LiteralPath $approval -Raw) -match '(?m)^- Decision:[ \t]*APPROVED[ \t]*\r?$')) {
                 Write-Host 'PASS  Human approval recorded' -ForegroundColor Green
             } else { Write-Host 'FAIL  Human approval missing' -ForegroundColor Red; $failures.Add('Human approval missing') }
         }

@@ -82,7 +82,7 @@ $project = "D:\Projects\MyApp"
 - apes-security-reviewer: security/privacy review.
 - apes-harness-evaluator: verdict độc lập dựa trên evidence.
 
-Chỉ Orchestrator có mainAgent: true; tám worker có subagent: true.
+Chỉ Orchestrator có mainAgent: true. Cả chín agent đều khai báo subagent: true để Orchestrator có thể được gọi lồng khi cần; tám worker còn lại không thể chọn làm agent chính.
 
 ## Tích hợp tùy chọn: Impeccable cho UI/UX
 
@@ -155,7 +155,9 @@ Không code sản phẩm trước khi người dùng duyệt brief, kiến trúc
 .\scripts\Test-APES.ps1 -ProjectPath "D:\Projects\MyApp" -Stage Approved
 ~~~
 
-GitHub Actions chạy validator và smoke test cài đặt vào workspace tạm trên Windows. PASS chỉ xác nhận metadata/đường dẫn/copy và cú pháp PowerShell, không chứng nhận chất lượng ứng dụng hoặc khả năng thực thi subagent trên máy thật.
+`-Stage PreCode` không chỉ kiểm tra file tồn tại: nó yêu cầu `00-project-brief.md` đã điền `Problem / opportunity`, `Project name`, `Target users`, `Acceptance criteria` và `02-architecture.md` đã có `Proposed stack`. Installer copy template rỗng vào đúng các đường dẫn đó, nên nếu chỉ kiểm tra sự tồn tại thì gate sẽ PASS ngay sau khi cài mà chưa có kế hoạch thật.
+
+GitHub Actions chạy validator và smoke test cài đặt vào workspace tạm trên Windows, gồm cả hai chiều của gate: template rỗng phải bị từ chối, brief đã điền phải được chấp nhận. PASS chỉ xác nhận metadata/đường dẫn/copy và cú pháp PowerShell, không chứng nhận chất lượng ứng dụng hoặc khả năng thực thi subagent trên máy thật.
 
 ## Kiểm tra trong Antigravity 2.0 Desktop App / Antigravity IDE
 

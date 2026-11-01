@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — Documentation reference integrity and real pre-code gate
+- Fix nine copy-paste-broken commands in `docs/PROMPT-WORKFLOW-ENGINE-V3.md` and `templates/prompts/APES-3.0-EXAMPLE-VI.md` where `.\scripts\` had lost its backslash and rendered as `.scripts`.
+- Install every top-level `docs/*.md` into the workspace instead of a hardcoded pair, so `PROMPT-WORKFLOW-ENGINE-V3.md` is present where the Orchestrator and workflow-engine skill tell the agent to read it.
+- Point `apes-harness-evaluator` at the schema that actually ships (`docs/engineering/apes/scorecard.schema.json`) instead of the non-existent `templates/evaluation-scorecard.schema.json`.
+- Add the missing `bootstrap/` segment to the `apes-project-bootstrap` document paths.
+- Add a documentation reference-integrity check to the validator: broken command paths, doubled backslashes and unresolvable file references now fail CI, and post-install checks verify that every `docs/<name>.md` referenced by an installed agent or skill exists in the workspace.
+- Make `-Stage PreCode` verify document content, not file existence. The installer ships empty bootstrap templates to the exact paths the gate inspected, so the gate previously passed on a fresh install with no plan written.
+- Extend the Windows CI smoke test to assert both directions of the pre-code gate: empty templates are rejected, a filled brief is accepted.
+- Replace `\s*` with `[ \t]*\r?` in frontmatter and document-field patterns. `\s` also matches CRLF, which let a pattern capture the following line and accept malformed metadata.
+- Print the real version in the installer banner instead of the stale `APES 2.1` string; add `.apes/` to `.gitignore`.
+- Clarify in README that all nine agents declare `subagent: true` and only the Orchestrator declares `mainAgent: true`.
+
 ## Unreleased — Project Manager + FlowPlan Projection
 - Add Project Manager planning skill to create canonical Project Brief, Master Plan and machine-readable Task Graph in the workspace.
 - Add human-friendly FlowPlan Projection skill; keep FlowPlan as a visual board rather than the canonical project plan or live runtime telemetry.

@@ -17,4 +17,30 @@ jobs:
           $target = Join-Path $env:RUNNER_TEMP 'apes-smoke-workspace'
           New-Item -ItemType Directory -Force -Path $target | Out-Null
           ./scripts/Install-APES.ps1 -Scope Project -ProjectPath $target
+      - name: PreCode gate rejects unfilled bootstrap templates
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'apes-smoke-workspace'
+          ./scripts/Test-APES.ps1 -ProjectPath $target -Stage PreCode
+          if ($LASTEXITCODE -eq 0) { throw 'PreCode gate passed on unfilled bootstrap templates.' }
+          Write-Host 'PreCode gate correctly rejected empty templates.'
+          # The rejection above is the expected outcome; clear the inherited exit code so the
+          # step succeeds. GitHub appends `exit $LASTEXITCODE` for shell: pwsh.
+          exit 0
+      - name: PreCode gate accepts a filled brief
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'apes-smoke-workspace'
+          $bootstrap = Join-Path $target 'docs/engineering/apes/bootstrap'
+          $brief = Join-Path $bootstrap '00-project-brief.md'
+          $arch = Join-Path $bootstrap '02-architecture.md'
+          (Get-Content -LiteralPath $brief -Raw) `
+            -replace '(?m)^- Problem / opportunity:[ \t]*\r?$', '- Problem / opportunity: verify the gate works' `
+            -replace '(?m)^- Project name:[ \t]*\r?$', '- Project name: Smoke App' `
+            -replace '(?m)^- Target users:[ \t]*\r?$', '- Target users: QA engineers' `
+            -replace '(?m)^- Acceptance criteria:[ \t]*\r?$', '- Acceptance criteria: PreCode gate passes' |
+            Set-Content -LiteralPath $brief -Encoding UTF8
+          (Get-Content -LiteralPath $arch -Raw) `
+            -replace '(?m)^- Proposed stack:[ \t]*\r?$', '- Proposed stack: PowerShell 5.1' |
+            Set-Content -LiteralPath $arch -Encoding UTF8
           ./scripts/Test-APES.ps1 -ProjectPath $target -Stage PreCode

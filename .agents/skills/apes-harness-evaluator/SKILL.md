@@ -20,6 +20,6 @@ User request, acceptance criteria, milestone plan, changed file list/diff, real 
 - Quality of test evidence and rollback readiness
 
 ## Output
-Produce a JSON object conforming to `templates/evaluation-scorecard.schema.json`. Verdict is `PASS`, `REJECT`, or `NEEDS_HUMAN_REVIEW`. Each finding includes severity, path/line when known, evidence, impact and remediation.
+Produce a JSON object conforming to `docs/engineering/apes/scorecard.schema.json`. Verdict is `PASS`, `REJECT`, or `NEEDS_HUMAN_REVIEW`. Each finding includes severity, path/line when known, evidence, impact and remediation.
 
 Do not inspect or grade private chain-of-thought. Never invent test results. Use `NOT_RUN` for missing checks.

@@ -7,3 +7,5 @@
 !.env.example
 # Local evaluation artifacts
 .apes-local/
+# APES run state and generated prompts are per-machine, never committed
+.apes/

@@ -13,24 +13,24 @@ APES 3.0 chuyển từ prompt library sang lớp chọn workflow, lắp prompt v
 
 Tạo prompt:
 ```powershell
-.scriptsBuild-APESPrompt.ps1 -Workflow standard-feature -ProjectPath (Get-Location).Path -Goal "Mô tả tính năng cần làm" -Mode Auto -OutputPath ".apes\generated\task-prompt.md"
+.\scripts\Build-APESPrompt.ps1 -Workflow standard-feature -ProjectPath (Get-Location).Path -Goal "Mô tả tính năng cần làm" -Mode Auto -OutputPath ".apes\generated\task-prompt.md"
 ```
 Mở file prompt được tạo, đưa nội dung vào Antigravity Agent Chat. Với Full Project, Deep Research hoặc Hard Review, thay workflow tương ứng.
 
 Tạo run state:
 ```powershell
-$result = .scriptsManage-APESRun.ps1 -Action Initialize -Workflow standard-feature -ProjectPath (Get-Location).Path
+$result = .\scripts\Manage-APESRun.ps1 -Action Initialize -Workflow standard-feature -ProjectPath (Get-Location).Path
 $result
 ```
 Dùng RUN_ID được in ra để ghi checkpoint:
 ```powershell
-.scriptsManage-APESRun.ps1 -Action Advance -ProjectPath (Get-Location).Path -RunId "<RUN_ID>" -Stage DISCOVERY -Evidence "Đã đọc src/...; acceptance criteria lưu tại ..."
-.scriptsManage-APESRun.ps1 -Action Show -ProjectPath (Get-Location).Path -RunId "<RUN_ID>"
+.\scripts\Manage-APESRun.ps1 -Action Advance -ProjectPath (Get-Location).Path -RunId "<RUN_ID>" -Stage DISCOVERY -Evidence "Đã đọc src/...; acceptance criteria lưu tại ..."
+.\scripts\Manage-APESRun.ps1 -Action Show -ProjectPath (Get-Location).Path -RunId "<RUN_ID>"
 ```
 Chặn hoặc hoàn tất:
 ```powershell
-.scriptsManage-APESRun.ps1 -Action Block -ProjectPath (Get-Location).Path -RunId "<RUN_ID>" -Reason "Test môi trường không chạy được"
-.scriptsManage-APESRun.ps1 -Action Complete -ProjectPath (Get-Location).Path -RunId "<RUN_ID>" -Evidence "Audit report: ...; tests: ..."
+.\scripts\Manage-APESRun.ps1 -Action Block -ProjectPath (Get-Location).Path -RunId "<RUN_ID>" -Reason "Test môi trường không chạy được"
+.\scripts\Manage-APESRun.ps1 -Action Complete -ProjectPath (Get-Location).Path -RunId "<RUN_ID>" -Evidence "Audit report: ...; tests: ..."
 ```
 
 ## Quy tắc
