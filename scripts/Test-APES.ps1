@@ -9,7 +9,15 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $failures = [System.Collections.Generic.List[string]]::new()
 $checks = 0
 $expectedAgentCount = 9
-$knownTools = @('view_file','replace_file_content','grep_search','find_by_name','run_command')
+# Tool names Antigravity documents for the `tools:` frontmatter: the four in the custom-agent
+# example plus the SDK BuiltinTools enum. Antigravity warns that an unmapped or misspelled tool
+# name "may cause the subagent process to hang during execution", so anything outside this
+# union must fail loudly instead of shipping.
+$knownTools = @(
+    'view_file', 'replace_file_content', 'grep_search', 'run_command',
+    'find_file', 'list_directory', 'search_directory', 'create_file', 'edit_file',
+    'ask_question', 'start_subagent', 'generate_image', 'search_web', 'read_url_content', 'finish'
+)
 
 function Test-RequiredPath([string]$Path, [string]$Label) {
     $script:checks++
@@ -25,9 +33,28 @@ function Get-Frontmatter([string]$Path) {
 function Test-RuleFile([string]$Path) {
     $script:checks++
     $frontmatter = Get-Frontmatter $Path
-    $valid = ($null -ne $frontmatter) -and ($frontmatter -match '(?m)^trigger:[ \t]*(always_on|model_decision|glob|manual)[ \t]*\r?$')
-    if ($valid) { Write-Host "PASS  Rule metadata: $Path" -ForegroundColor Green }
-    else { Write-Host "FAIL  Rule metadata: $Path" -ForegroundColor Red; $script:failures.Add("Invalid rule: $Path") }
+    $triggerMatch = if ($null -ne $frontmatter) {
+        [regex]::Match($frontmatter, '(?m)^trigger:[ \t]*(always_on|model_decision|glob|manual)[ \t]*\r?$')
+    }
+    if (-not $triggerMatch.Success) {
+        Write-Host "FAIL  Rule metadata: $Path" -ForegroundColor Red
+        $script:failures.Add("Invalid or missing rule trigger: $Path")
+        return
+    }
+    # Antigravity discards rules with a bad trigger silently, and a model_decision rule without
+    # a description has nothing to put in the prompt index, so it never activates.
+    $trigger = $triggerMatch.Groups[1].Value
+    if ($trigger -eq 'model_decision' -and $frontmatter -notmatch '(?m)^description:[ \t]*\S') {
+        Write-Host "FAIL  Rule $trigger requires a description: $Path" -ForegroundColor Red
+        $script:failures.Add("Rule uses model_decision without a description (never activates): $Path")
+        return
+    }
+    if ($trigger -eq 'glob' -and $frontmatter -notmatch '(?m)^globs?:[ \t]*\S') {
+        Write-Host "FAIL  Rule $trigger requires globs: $Path" -ForegroundColor Red
+        $script:failures.Add("Rule uses glob without globs (never activates): $Path")
+        return
+    }
+    Write-Host "PASS  Rule metadata: $Path" -ForegroundColor Green
 }
 function Test-SkillFile([string]$Path) {
     $script:checks++
@@ -65,7 +92,7 @@ function Test-AgentFile([string]$Path) {
         foreach ($tool in [regex]::Matches($toolSection.Groups['items'].Value, '(?m)^[ \t]*-[ \t]*([a-zA-Z0-9_]+)[ \t]*\r?$')) {
             if ($knownTools -notcontains $tool.Groups[1].Value) {
                 $validTools = $false
-                $script:failures.Add("Unknown tool '$($tool.Groups[1].Value)' in $Path")
+                $script:failures.Add("Unknown tool '$($tool.Groups[1].Value)' in $Path — Antigravity may hang the subagent on an unmapped tool name")
             }
         }
     }
@@ -331,6 +358,8 @@ try {
 
 $repoRules = @(Get-ChildItem (Join-Path $repoRoot '.agents/rules') -Filter '*.md' -File)
 foreach ($file in $repoRules) { Test-RuleFile $file.FullName }
+# The global rule tree ships to every machine, so validate it in the repository too.
+foreach ($file in (Get-ChildItem (Join-Path $repoRoot 'global/rules') -Filter '*.md' -File)) { Test-RuleFile $file.FullName }
 $repoSkills = @(Get-ChildItem (Join-Path $repoRoot '.agents/skills') -Filter 'SKILL.md' -Recurse -File)
 foreach ($file in $repoSkills) { Test-SkillFile $file.FullName }
 if ($repoSkills.Count -lt 20) { $failures.Add("Expected at least 20 skills; found $($repoSkills.Count).") }

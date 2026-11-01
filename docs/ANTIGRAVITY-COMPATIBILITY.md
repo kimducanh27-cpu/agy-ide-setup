@@ -38,6 +38,14 @@ Do not mix transcript paths, runtime fixtures, or compatibility claims between t
 - APES has one primary Orchestrator and eight specialist workers.
 - File presence is not proof of runtime discovery or successful invocation. Smoke-test the target surface and report evidence.
 
+## Metadata validation APES enforces
+
+`scripts/Test-APES.ps1` rejects metadata that Antigravity would silently mishandle. Both checks below exist because the failure mode is invisible at runtime.
+
+- **Tool names in `tools:` must be documented.** Google warns: *"Specifying an unmapped or misspelled tool name in the `tools` list may cause the subagent process to hang during execution."* The validator accepts the names from the custom-agent documentation example (`view_file`, `replace_file_content`, `grep_search`, `run_command`) plus the SDK `BuiltinTools` enum, and fails on anything else. Do not add a tool name that you have not seen in official documentation — a plausible-sounding name can hang the worker instead of erroring.
+- **`trigger: model_decision` requires `description`.** Antigravity injects only the rule's path and `description` into the prompt index for `model_decision` rules and reads the full file on demand. A rule without a description has nothing to index, so it never activates. `trigger: glob` likewise requires `globs`.
+- **`trigger` spelling is exact.** Values are `always_on`, `model_decision`, `glob`, `manual`. Camel-case variants such as `alwaysOn` are discarded silently.
+
 ## Hooks
 
 - Workspace hooks: .agents/hooks.json.

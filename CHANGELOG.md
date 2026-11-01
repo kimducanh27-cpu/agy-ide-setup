@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Antigravity metadata correctness
+- Remove `find_by_name` from six custom agents. Google documents that an unmapped or misspelled tool name in `tools:` *"may cause the subagent process to hang during execution"*, and `find_by_name` appears in no official example or in the SDK `BuiltinTools` enum. The nearest documented name is `find_file`, which was deliberately not substituted without a live test.
+- Replace the validator's tool allowlist with the union of the custom-agent documentation example and the SDK `BuiltinTools` enum, so an undocumented name now fails instead of passing. The old allowlist contained `find_by_name`, which is why the validator reported 104/104 while six workers were at risk.
+- Add `description` to `apes-impeccable-routing` and `apes-workflow-engine` in both workspace and global scope. `description` is required for `trigger: model_decision`; without it the rule has nothing to put in the prompt index and never activates.
+- Validate global rules at repository level too, not only after installation, and require `description` for `model_decision` and `globs` for `glob`.
+- Document both rules in `docs/ANTIGRAVITY-COMPATIBILITY.md` with the official wording so the next contributor does not re-add an invented tool name.
+
 ## Unreleased — CI supply chain
 - Pin `actions/checkout` to commit `11d5960` (v4.4.0) in both workflows instead of the moving `@v4` tag. A tag can be repointed; a commit cannot.
 - Note: `actions/checkout` is at v7. Moving off v4 is a separate change with its own behaviour differences and is not bundled here.
