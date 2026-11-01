@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — Optional mattpocock/skills integration
+
+- Add `scripts/Install-MattSkills.ps1` and `scripts/Test-MattSkills.ps1`, plus `docs/MATT-SKILLS-INTEGRATION.md`.
+- **Not vendored.** `AGENTS.md` requires third-party skills to stay separately licensed and independently installed, so this follows the Impeccable pattern: pinned download, verified frontmatter, backup before replace, nothing executed from the archive.
+- Pin upstream by **commit** (`4ae2317`), not by branch — a branch moves, a commit cannot.
+- `-Set Stable` (default) installs 27 skills from `engineering/` and `productivity/`. `-Set All` adds the 8 unfinished `in-progress/` skills and the 4 `misc/` skills that upstream's own `SCOPE.md` calls "frozen and unmaintained".
+- The installer refuses to replace a directory that is not the same skill: it checks that the existing `SKILL.md` declares the same `name:` before overwriting, and backs the folder up first.
+- Writes `.agents/matt-skills.json` recording ref, set, timestamp and the exact skill list, so `Test-MattSkills.ps1` can verify what was installed rather than guessing from the directory.
+- Document the real constraint: `code-review`, `implement-spec` and `research` expect native subagent delegation. On a runtime without `invoke_subagent` they degrade to sequential passes, which removes the reason they exist.
+
 ## Unreleased — Text integrity
 
 - Remove an invisible **backspace byte (0x08)** from `.agents/rules/apes-core.md`. It sat between `ý` and `rõ`, so the sentence rendered as `đồng ýrõ ràng` and looked like a missing space. It was a control character.
