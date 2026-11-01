@@ -85,8 +85,8 @@ Tài liệu đầy đủ: docs/FLOWPLAN-WINDOWS-INTEGRATION.md. Không thêm con
 
 ~~~powershell
 $project = (Get-Location).Path
-& (Join-Path $apes 'scripts\\Build-APESPrompt.ps1') -Workflow standard-feature -ProjectPath $project -Goal "Mô tả mục tiêu" -Mode ManualCheckpoint -OutputPath (Join-Path $project '.apes\\generated\\prompt.md')
-& (Join-Path $apes 'scripts\\Manage-APESRun.ps1') -Action Initialize -Workflow standard-feature -ProjectPath $project
+& (Join-Path $apes 'scripts\Build-APESPrompt.ps1') -Workflow standard-feature -ProjectPath $project -Goal "Mô tả mục tiêu" -Mode ManualCheckpoint -OutputPath (Join-Path $project '.apes\generated\prompt.md')
+& (Join-Path $apes 'scripts\Manage-APESRun.ps1') -Action Initialize -Workflow standard-feature -ProjectPath $project
 ~~~
 
 Mở prompt được tạo và đưa vào Agent Chat. Giữ RUN_ID để ghi checkpoint. Chỉ Advance khi stage khớp và evidence đã được kiểm tra; tại APPROVAL, phải có xác nhận rõ của người dùng và dùng -ApprovalConfirmed. Dùng Block/Resume khi có blocker. Complete chỉ sau khi đi hết stage list và có audit evidence.

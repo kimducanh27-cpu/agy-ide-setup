@@ -65,10 +65,12 @@ $project = "D:\Projects\MyApp"
 | Hạng mục | Global | Workspace |
 |---|---|---|
 | Base instructions | ~/.gemini/config/AGENTS.md | .agents/AGENTS.md |
-| Rules | ~/.gemini/config/rules/ | .agents/rules/ |
-| Skills | ~/.gemini/config/skills/ | .agents/skills/ |
+| Rules | ~/.gemini/config/rules/ (7) | .agents/rules/ (7) |
+| Skills | ~/.gemini/config/skills/ (10 APES skills) | .agents/skills/ (10 APES + 17 role skills) |
 | Custom Agents | ~/.gemini/config/agents/*.md | .agents/agents/*.md |
-| Engineering docs | — | docs/engineering/apes/ |
+| Engineering docs | — | docs/engineering/apes/ (toàn bộ docs/*.md) |
+
+17 `role-*` skill chỉ cài ở workspace. Chúng là tài liệu tham chiếu theo vai trò cho từng dự án, không phải nguyên tắc chung toàn máy; `Scope Global` cố ý không đưa chúng lên `~/.gemini/config/skills/`.
 
 ## Custom Agents
 
@@ -82,7 +84,7 @@ $project = "D:\Projects\MyApp"
 - apes-security-reviewer: security/privacy review.
 - apes-harness-evaluator: verdict độc lập dựa trên evidence.
 
-Chỉ Orchestrator có mainAgent: true; tám worker có subagent: true.
+Chỉ Orchestrator có mainAgent: true. Cả chín agent đều khai báo subagent: true để Orchestrator có thể được gọi lồng khi cần; tám worker còn lại không thể chọn làm agent chính.
 
 ## Tích hợp tùy chọn: Impeccable cho UI/UX
 
@@ -155,7 +157,11 @@ Không code sản phẩm trước khi người dùng duyệt brief, kiến trúc
 .\scripts\Test-APES.ps1 -ProjectPath "D:\Projects\MyApp" -Stage Approved
 ~~~
 
-GitHub Actions chạy validator và smoke test cài đặt vào workspace tạm trên Windows. PASS chỉ xác nhận metadata/đường dẫn/copy và cú pháp PowerShell, không chứng nhận chất lượng ứng dụng hoặc khả năng thực thi subagent trên máy thật.
+`-Stage PreCode` không chỉ kiểm tra file tồn tại: nó yêu cầu `00-project-brief.md` đã điền `Problem / opportunity`, `Project name`, `Target users`, `Acceptance criteria` và `02-architecture.md` đã có `Proposed stack`. Installer copy template rỗng vào đúng các đường dẫn đó, nên nếu chỉ kiểm tra sự tồn tại thì gate sẽ PASS ngay sau khi cài mà chưa có kế hoạch thật.
+
+Khi truyền `-ProjectPath`, validator còn đối chiếu `version` trong `.agents/apes-install.json` với `VERSION` của repo. Cài lệch bản sẽ FAIL kèm hướng dẫn cài lại, thay vì để workspace cũ chạy âm thầm với rule/skill đã đổi.
+
+GitHub Actions chạy validator và smoke test cài đặt vào workspace tạm trên Windows, gồm cả hai chiều của gate: template rỗng phải bị từ chối, brief đã điền phải được chấp nhận. PASS chỉ xác nhận metadata/đường dẫn/copy và cú pháp PowerShell, không chứng nhận chất lượng ứng dụng hoặc khả năng thực thi subagent trên máy thật.
 
 ## Kiểm tra trong Antigravity 2.0 Desktop App / Antigravity IDE
 
@@ -174,7 +180,26 @@ APES không tự cài MCP server hoặc hooks tuỳ tiện. MCP có thể cần 
 - Không cần quyền Administrator.
 - Installer APES cơ bản không tải/chạy mã ngoài.
 - Installer Impeccable là opt-in riêng: tải archive của tag upstream đã chọn, chỉ sao chép skill Antigravity và backup thư mục Impeccable cũ trước khi thay thế; không thực thi script trong lúc cài.
-- Không xóa file hiện có; file APES cùng tên được backup tại %LOCALAPPDATA%\APES\backups\.
+- Không xóa file hiện có; file APES cùng tên được backup tại %LOCALAPPDATA%\APES\backups\ kèm `backup-manifest.json` ánh xạ đường dẫn gốc sang file backup.
+
+## Khôi phục sau khi cài đè
+
+Mỗi lần cài ghi đè file đã tồn tại, installer ghi thêm `backup-manifest.json` vào thư mục backup. Script restore đọc manifest đó và **mặc định chỉ xem trước**:
+
+~~~powershell
+# Xem trước, không ghi gì (dùng backup mới nhất)
+.\scripts\Restore-APES.ps1 -DryRun
+
+# Khôi phục thật từ một thư mục backup cụ thể
+.\scripts\Restore-APES.ps1 -BackupPath "$env:LOCALAPPDATA\APES\backups\20261101-143828" -Force
+
+# Chỉ khôi phục các file khớp chuỗi
+.\scripts\Restore-APES.ps1 -BackupPath "<dir>" -Force -Only 'apes-core','AGENTS.md'
+~~~
+
+Trước khi ghi, script kiểm tra **tất cả** file backup có mặt; thiếu một file là hủy toàn bộ, không ghi gì. Trạng thái hiện tại được giữ lại ở `restore-safety-<timestamp>` trước khi bị ghi đè, nên có thể hoàn tác bằng cách chạy lại chính script với `-BackupPath` trỏ vào thư mục đó.
+
+Backup tạo trước APES 3.0 không có manifest nên không khôi phục tự động được; script báo rõ thay vì đoán.
 - Không commit secrets hoặc dữ liệu cá nhân.
 - Không tự deploy production, chi tiêu, tạo cloud resource hoặc thay đổi dữ liệu thật.
 

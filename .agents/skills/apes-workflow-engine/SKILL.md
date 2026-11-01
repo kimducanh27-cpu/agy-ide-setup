@@ -15,7 +15,7 @@ Use this skill for multi-step work, new features, project bootstrap, deep resear
 - deep-research: sourced investigation and cross-check.
 - hard-review: read-only critical review; do not edit files.
 
-Read `config/workflows.json` and `docs/PROMPT-WORKFLOW-ENGINE-V3.md` before operating the engine.
+Read `config/workflows.json` (installed at `docs/engineering/apes/config/workflows.json`) and `docs/PROMPT-WORKFLOW-ENGINE-V3.md` (installed at `docs/engineering/apes/PROMPT-WORKFLOW-ENGINE-V3.md`) before operating the engine.
 
 ## Operation
 1. Inspect git status and workspace instructions. Never overwrite user changes.

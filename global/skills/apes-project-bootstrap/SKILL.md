@@ -22,7 +22,7 @@ Dùng khi bắt đầu dự án mới, mở workspace chưa rõ cấu trúc ho�
 
 ## Outputs
 
-Tạo bộ hồ sơ bootstrap từ `docs/engineering/apes/00-project-brief.md` đến `docs/engineering/apes/06-approval.md`.
+Tạo bộ hồ sơ bootstrap từ `docs/engineering/apes/bootstrap/00-project-brief.md` đến `docs/engineering/apes/bootstrap/06-approval.md`.
 
 ## Stop conditions
 

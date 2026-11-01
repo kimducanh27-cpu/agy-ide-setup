@@ -5,7 +5,10 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
+$apesVersion = (Get-Content (Join-Path $repoRoot 'VERSION') -Raw).Trim()
 $backupRoot = Join-Path $env:LOCALAPPDATA (Join-Path 'APES\backups' (Get-Date -Format 'yyyyMMdd-HHmmss'))
+
+$backupRecords = [System.Collections.Generic.List[object]]::new()
 
 function Backup-IfExists([string]$Path) {
     if (Test-Path -LiteralPath $Path) {
@@ -13,6 +16,11 @@ function Backup-IfExists([string]$Path) {
         $dest = Join-Path $backupRoot $relative
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
         Copy-Item -LiteralPath $Path -Destination $dest -Recurse -Force
+        $script:backupRecords.Add([ordered]@{
+            original  = $Path
+            backup    = $dest
+            backedUpAt = (Get-Date).ToString('o')
+        })
         Write-Host "BACKUP: $Path -> $dest" -ForegroundColor Yellow
     }
 }
@@ -43,6 +51,20 @@ function Install-Global {
         }
     }
     Install-MarkdownAgents (Join-Path $repoRoot '.agents\agents') (Join-Path $globalRoot 'agents')
+    # Global installs need the same version marker as workspace installs, otherwise a stale
+    # machine-wide install can never be detected.
+    $globalMarker = Join-Path $globalRoot 'apes-install.json'
+    $globalMarkerContent = [ordered]@{
+        version     = $apesVersion
+        installedAt = (Get-Date).ToString('o')
+        source      = 'https://github.com/kimducanh27-cpu/agy-ide-setup'
+        scope       = 'Global'
+        customAgents = 9
+    } | ConvertTo-Json
+    $globalMarkerTemp = Join-Path $env:TEMP ('apes-marker-' + [guid]::NewGuid().ToString('N') + '.json')
+    Set-Content -LiteralPath $globalMarkerTemp -Value $globalMarkerContent -Encoding UTF8
+    Copy-NamespaceFile $globalMarkerTemp $globalMarker
+    Remove-Item -LiteralPath $globalMarkerTemp -Force
 }
 function Install-Project {
     if (-not (Test-Path -LiteralPath $ProjectPath -PathType Container)) { throw "Không tìm thấy thư mục dự án: $ProjectPath" }
@@ -75,8 +97,11 @@ function Install-Project {
     }
     $workflowConfigDestination = Join-Path $docRoot 'config\workflows.json'
     Copy-NamespaceFile (Join-Path $repoRoot 'config\workflows.json') $workflowConfigDestination
-    Copy-NamespaceFile (Join-Path $repoRoot 'docs\PROJECT-PLANNING-AND-FLOWPLAN.md') (Join-Path $docRoot 'PROJECT-PLANNING-AND-FLOWPLAN.md')
-    Copy-NamespaceFile (Join-Path $repoRoot 'docs\FLOWPLAN-WINDOWS-INTEGRATION.md') (Join-Path $docRoot 'FLOWPLAN-WINDOWS-INTEGRATION.md')
+    # Copy every top-level doc so that any guide an agent or skill tells the agent to read
+    # is present in the workspace. A hardcoded list silently drifts behind new documentation.
+    foreach ($docFile in Get-ChildItem (Join-Path $repoRoot 'docs') -Filter '*.md' -File) {
+        Copy-NamespaceFile $docFile.FullName (Join-Path $docRoot $docFile.Name)
+    }
     $promptRoot = Join-Path $repoRoot 'templates\prompts'
     $promptDestination = Join-Path $docRoot 'prompts'
     foreach ($promptName in @('APES-PROJECT-MANAGER-WORKFLOW-VI.md','FLOWPLAN-WORKFLOW-PROMPTS-VI.md')) {
@@ -84,7 +109,7 @@ function Install-Project {
     }
     $marker = Join-Path $agentRoot 'apes-install.json'
     $markerContent = [ordered]@{
-        version = (Get-Content (Join-Path $repoRoot 'VERSION') -Raw).Trim()
+        version = $apesVersion
         installedAt = (Get-Date).ToString('o')
         source = 'https://github.com/kimducanh27-cpu/agy-ide-setup'
         scope = 'Project'
@@ -95,8 +120,23 @@ function Install-Project {
     Copy-NamespaceFile $temp $marker
     Remove-Item -LiteralPath $temp -Force
 }
-Write-Host "APES 2.1 installer — Scope: $Scope" -ForegroundColor Cyan
+Write-Host "APES $apesVersion installer — Scope: $Scope" -ForegroundColor Cyan
 if ($Scope -in @('Global','All')) { Install-Global }
 if ($Scope -in @('Project','All')) { Install-Project }
-Write-Host "Hoàn tất. Backup (nếu có): $backupRoot" -ForegroundColor Green
+Write-Host "Hoàn tất." -ForegroundColor Green
+if ($backupRecords.Count -gt 0) {
+    # Backup file names are flattened, so record the original path to keep restore possible.
+    $manifestPath = Join-Path $backupRoot 'backup-manifest.json'
+    $manifest = [ordered]@{
+        apesVersion = $apesVersion
+        createdAt   = (Get-Date).ToString('o')
+        scope       = $Scope
+        entries     = $backupRecords
+    } | ConvertTo-Json -Depth 5
+    Set-Content -LiteralPath $manifestPath -Value $manifest -Encoding UTF8
+    Write-Host "Đã backup $($backupRecords.Count) file. Khôi phục: $backupRoot" -ForegroundColor Yellow
+    Write-Host "Manifest ánh xạ file gốc -> bản backup: $manifestPath" -ForegroundColor Yellow
+} else {
+    Write-Host 'Không có file nào bị ghi đè, nên không tạo backup.' -ForegroundColor Green
+}
 Write-Host 'Tiếp theo: reload Antigravity, kiểm tra Rules/Skills/Agents trong Customizations, rồi yêu cầu apes-orchestrator bootstrap dự án.'

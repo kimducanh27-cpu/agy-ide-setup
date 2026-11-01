@@ -9,6 +9,20 @@ param(
 $ErrorActionPreference = 'Stop'
 $failures = [System.Collections.Generic.List[string]]::new()
 
+function Test-SameEndpoint([string]$Left, [string]$Right) {
+    # localhost and 127.0.0.1 address the same local server; do not report a mismatch.
+    $leftUri = $null
+    $rightUri = $null
+    if (-not [Uri]::TryCreate($Left, [UriKind]::Absolute, [ref]$leftUri)) { return $false }
+    if (-not [Uri]::TryCreate($Right, [UriKind]::Absolute, [ref]$rightUri)) { return $false }
+    $leftHost = if ($leftUri.Host -eq 'localhost') { '127.0.0.1' } else { $leftUri.Host }
+    $rightHost = if ($rightUri.Host -eq 'localhost') { '127.0.0.1' } else { $rightUri.Host }
+    return ($leftUri.Scheme -eq $rightUri.Scheme) -and
+           ($leftHost -eq $rightHost) -and
+           ($leftUri.Port -eq $rightUri.Port) -and
+           ($leftUri.AbsolutePath.TrimEnd('/') -eq $rightUri.AbsolutePath.TrimEnd('/'))
+}
+
 function Test-Target([string]$Name, [string]$Path, [string]$ExpectedUrl) {
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
         Write-Host "FAIL  $Name config missing: $Path" -ForegroundColor Red
@@ -35,7 +49,7 @@ function Test-Target([string]$Name, [string]$Path, [string]$ExpectedUrl) {
     }
 
     $urlProperty = $entry.Value.PSObject.Properties['serverUrl']
-    if ($null -eq $urlProperty -or [string]$urlProperty.Value -ne $ExpectedUrl) {
+    if ($null -eq $urlProperty -or -not (Test-SameEndpoint ([string]$urlProperty.Value) $ExpectedUrl)) {
         Write-Host "FAIL  $Name FlowPlan serverUrl mismatch" -ForegroundColor Red
         $script:failures.Add("$Name FlowPlan serverUrl mismatch")
         return
