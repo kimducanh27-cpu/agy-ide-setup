@@ -326,6 +326,35 @@ else {
     foreach ($dead in $deadReferences) { $failures.Add("Unresolved reference: $dead") }
 }
 
+# Text integrity. Two defects of this class have already shipped in this repo's history and
+# neither is visible in a diff:
+#   - a backspace byte (0x08) inside a sentence, which rendered as "đồng ýrõ ràng"
+#   - U+1EFA (LATIN CAPITAL LETTER MIDDLE-WELSH LL) replacing the end of a word, from an editor
+#     that lost its encoding
+# A human reviewer cannot see either one, so the check has to be mechanical.
+$vietnameseLetters = [char[]]'aàáảãạăằắẳẵặâầấẩẫậeèéẻẽẹêềếểễệiìíỉĩịoòóỏõọôồốổỗộơờớởỡợuùúủũụưừứửữựyỳýỷỹỵdđAÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬEÈÉẺẼẸÊỀẾỂỄỆIÌÍỈĨỊOÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢUÙÚỦŨỤƯỪỨỬỮỰYỲÝỶỸỴDĐ'
+$textIssues = @()
+$textFiles = Get-ChildItem -Path $repoRoot -Recurse -File | Where-Object { $_.Extension -in @('.md', '.json', '.ps1', '.yml') }
+foreach ($file in $textFiles) {
+    $relative = $file.FullName.Substring($repoRoot.Length).TrimStart('\', '/')
+    $text = Get-Content -LiteralPath $file.FullName -Raw
+    if ([string]::IsNullOrEmpty($text)) { continue }
+    foreach ($match in [regex]::Matches($text, '[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]')) {
+        $textIssues += ("{0} contains control character U+{1:X4}" -f $relative, [int][char]$match.Value)
+    }
+    foreach ($match in [regex]::Matches($text, '[\u1E00-\u1EFF]')) {
+        if ($vietnameseLetters -notcontains [char]$match.Value) {
+            $textIssues += ("{0} contains a non-Vietnamese glyph U+{1:X4} ({2})" -f $relative, [int][char]$match.Value, [System.Globalization.CharUnicodeInfo]::GetUnicodeCategory([char]$match.Value))
+        }
+    }
+}
+$checks++
+if ($textIssues.Count -eq 0) { Write-Host 'PASS  No invisible control characters or stray glyphs in text files' -ForegroundColor Green }
+else {
+    Write-Host 'FAIL  Text files contain invisible or stray characters' -ForegroundColor Red
+    foreach ($issue in $textIssues) { $failures.Add($issue) }
+}
+
 # Validate the workflow catalog and execute a temporary Prompt Builder + state-ledger smoke test.
 try {
     $catalog = Get-Content -LiteralPath (Join-Path $repoRoot 'config/workflows.json') -Raw | ConvertFrom-Json

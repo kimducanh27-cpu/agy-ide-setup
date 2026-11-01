@@ -22,9 +22,20 @@ Antigravity 2.0 Desktop App supports workspace and global Custom Agents through 
 
 APES uses documented fields: name, description, mainAgent, subagent, model, commandExecutionPolicy, and tools where an explicit allowlist is appropriate.
 
-Reviewers use documented read-only tools. QA additionally receives run_command to execute checks.
+Every agent declares an explicit `tools:` block. Omitting it is never neutral: a custom agent without `tools:` receives a fixed six-tool baseline (`send_message`, `view_file`, `read_url_content`, `search_web`, `schedule`, `generate_image`) that contains no write tool, no `run_command` and no `invoke_subagent`. An earlier revision left `apes-implementation-engineer` and `apes-github-researcher` without `tools:` — the agent whose job is to write code could not write a file, and the researcher could not search the local codebase.
 
-The Orchestrator declares an explicit 17-tool allowlist, including invoke_subagent. It cannot omit `tools:` and inherit delegation: a custom agent with no `tools:` block receives a fixed six-tool baseline (send_message, view_file, read_url_content, search_web, schedule, generate_image) that excludes invoke_subagent, so the Orchestrator silently loses the ability to delegate. `tools:` replaces the baseline rather than extending it — declaring a list both grants and withholds capabilities.
+| Agent | Tools |
+|---|---|
+| `apes-orchestrator` | 17, including `invoke_subagent` |
+| `apes-implementation-engineer` | read set + `write_file`, `edit_file`, `run_command` |
+| `apes-github-researcher` | read set + `search_web`, `read_url_content` |
+| `apes-qa-engineer` | read set + `run_command` |
+| `apes-ui-ux-reviewer` | read set + `read_url_content` |
+| `apes-project-analyst`, `apes-solution-architect`, `apes-security-reviewer`, `apes-harness-evaluator` | read set |
+
+Read set = `view_file`, `read_file`, `grep_search`, `find_by_name`. Reviewers and the evaluator stay read-only on purpose: a reviewer that can write is not an independent reviewer.
+
+The Orchestrator also cannot omit `tools:` and inherit delegation: a custom agent with no `tools:` block excludes `invoke_subagent`, so the Orchestrator silently loses the ability to delegate. `tools:` replaces the baseline rather than extending it — declaring a list both grants and withholds capabilities.
 
 ## Verify in Antigravity 2.0 Desktop App / IDE
 

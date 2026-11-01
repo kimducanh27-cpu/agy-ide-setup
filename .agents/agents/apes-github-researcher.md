@@ -6,6 +6,13 @@ mainAgent: false
 subagent: true
 model: pro
 commandExecutionPolicy: sandbox
+tools:
+  - view_file
+  - read_file
+  - grep_search
+  - find_by_name
+  - search_web
+  - read_url_content
 ---
 
 # GitHub & Technology Researcher
