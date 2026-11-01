@@ -334,6 +334,37 @@ $repoSkills = @(Get-ChildItem (Join-Path $repoRoot '.agents/skills') -Filter 'SK
 foreach ($file in $repoSkills) { Test-SkillFile $file.FullName }
 if ($repoSkills.Count -lt 20) { $failures.Add("Expected at least 20 skills; found $($repoSkills.Count).") }
 
+# The global tree is a deliberate subset of the workspace tree. Copies that are meant to be
+# identical must stay identical; the five files below differ on purpose because the global
+# variants are pointers back to the workspace. Any other difference is silent drift.
+$intentionalVariants = @(
+    'skills/apes-milestone-delivery/SKILL.md',
+    'skills/apes-ui-ux-review/SKILL.md',
+    'skills/apes-workflow-engine/SKILL.md',
+    'rules/apes-core.md',
+    'rules/apes-impeccable-routing.md'
+)
+$globalRootPath = Join-Path $repoRoot 'global'
+$workspaceRootPath = Join-Path $repoRoot '.agents'
+$drifted = @()
+foreach ($file in (Get-ChildItem $globalRootPath -Recurse -File)) {
+    $relative = $file.FullName.Substring($globalRootPath.Length).TrimStart('\','/').Replace('\','/')
+    if ($relative -eq 'AGENTS.md') { continue }
+    if ($intentionalVariants -contains $relative) { continue }
+    $workspaceFile = Join-Path $workspaceRootPath $relative
+    if (-not (Test-Path -LiteralPath $workspaceFile -PathType Leaf)) { $drifted += "missing in .agents: $relative"; continue }
+    if ((Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash -ne
+        (Get-FileHash -LiteralPath $workspaceFile -Algorithm SHA256).Hash) {
+        $drifted += "content differs: $relative"
+    }
+}
+$checks++
+if ($drifted.Count -eq 0) { Write-Host 'PASS  Global and workspace copies are in sync' -ForegroundColor Green }
+else {
+    Write-Host 'FAIL  Global and workspace copies drifted' -ForegroundColor Red
+    foreach ($item in $drifted) { $failures.Add("Global/workspace drift: $item") }
+}
+
 $repoAgents = @(Get-ChildItem (Join-Path $repoRoot '.agents/agents') -Filter '*.md' -File)
 if ($repoAgents.Count -ne $expectedAgentCount) { $failures.Add("Expected $expectedAgentCount workspace agents; found $($repoAgents.Count).") }
 foreach ($file in $repoAgents) { Test-AgentFile $file.FullName }
@@ -346,7 +377,9 @@ if ($CheckGlobal) {
     $globalRoot = Join-Path $HOME '.gemini/config'
     Test-RequiredPath (Join-Path $globalRoot 'AGENTS.md') 'Installed global AGENTS.md'
     foreach ($file in Get-ChildItem (Join-Path $repoRoot 'global/rules') -Filter '*.md' -File) {
-        Test-RequiredPath (Join-Path $globalRoot ('rules/' + $file.Name)) "Global rule $($file.Name)"
+        $installedRule = Join-Path $globalRoot ('rules/' + $file.Name)
+        Test-RequiredPath $installedRule "Global rule $($file.Name)"
+        if (Test-Path -LiteralPath $installedRule -PathType Leaf) { Test-RuleFile $installedRule }
     }
     foreach ($folder in Get-ChildItem (Join-Path $repoRoot 'global/skills') -Directory) {
         Test-RequiredPath (Join-Path $globalRoot ('skills/' + $folder.Name + '/SKILL.md')) "Global skill $($folder.Name)"
@@ -358,6 +391,29 @@ if ($CheckGlobal) {
 if ($ProjectPath) {
     $project = (Resolve-Path -LiteralPath $ProjectPath).Path
     Test-RequiredPath (Join-Path $project '.agents/AGENTS.md') 'Installed workspace AGENTS.md'
+
+    # The install marker records which APES version wrote this workspace. Comparing it with
+    # the repository VERSION turns a silent stale install into an actionable message.
+    $markerPath = Join-Path $project '.agents/apes-install.json'
+    $script:checks++
+    $repoVersion = (Get-Content (Join-Path $repoRoot 'VERSION') -Raw).Trim()
+    if (-not (Test-Path -LiteralPath $markerPath -PathType Leaf)) {
+        Write-Host 'FAIL  Install marker .agents/apes-install.json missing; reinstall APES' -ForegroundColor Red
+        $failures.Add('Install marker missing; reinstall APES')
+    } else {
+        try {
+            $markerVersion = [string](Get-Content -LiteralPath $markerPath -Raw | ConvertFrom-Json).version
+            if ($markerVersion -eq $repoVersion) {
+                Write-Host "PASS  Installed version matches repository ($repoVersion)" -ForegroundColor Green
+            } else {
+                Write-Host "FAIL  Workspace has APES $markerVersion but repository is $repoVersion; reinstall" -ForegroundColor Red
+                $failures.Add("Version mismatch: workspace $markerVersion, repository $repoVersion; reinstall APES")
+            }
+        } catch {
+            Write-Host 'FAIL  Install marker is not valid JSON; reinstall APES' -ForegroundColor Red
+            $failures.Add('Install marker is not valid JSON')
+        }
+    }
     $installedDocRoot = Join-Path $project 'docs/engineering/apes'
     Test-RequiredPath (Join-Path $installedDocRoot 'config/workflows.json') 'Installed APES workflow catalog'
     Test-RequiredPath (Join-Path $installedDocRoot 'PROJECT-PLANNING-AND-FLOWPLAN.md') 'Installed project planning guide'

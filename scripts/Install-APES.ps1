@@ -8,12 +8,19 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $apesVersion = (Get-Content (Join-Path $repoRoot 'VERSION') -Raw).Trim()
 $backupRoot = Join-Path $env:LOCALAPPDATA (Join-Path 'APES\backups' (Get-Date -Format 'yyyyMMdd-HHmmss'))
 
+$backupRecords = [System.Collections.Generic.List[object]]::new()
+
 function Backup-IfExists([string]$Path) {
     if (Test-Path -LiteralPath $Path) {
         $relative = $Path -replace '^[A-Za-z]:\\','' -replace '[:\\/]','_'
         $dest = Join-Path $backupRoot $relative
         New-Item -ItemType Directory -Force -Path (Split-Path -Parent $dest) | Out-Null
         Copy-Item -LiteralPath $Path -Destination $dest -Recurse -Force
+        $script:backupRecords.Add([ordered]@{
+            original  = $Path
+            backup    = $dest
+            backedUpAt = (Get-Date).ToString('o')
+        })
         Write-Host "BACKUP: $Path -> $dest" -ForegroundColor Yellow
     }
 }
@@ -102,5 +109,20 @@ function Install-Project {
 Write-Host "APES $apesVersion installer — Scope: $Scope" -ForegroundColor Cyan
 if ($Scope -in @('Global','All')) { Install-Global }
 if ($Scope -in @('Project','All')) { Install-Project }
-Write-Host "Hoàn tất. Backup (nếu có): $backupRoot" -ForegroundColor Green
+Write-Host "Hoàn tất." -ForegroundColor Green
+if ($backupRecords.Count -gt 0) {
+    # Backup file names are flattened, so record the original path to keep restore possible.
+    $manifestPath = Join-Path $backupRoot 'backup-manifest.json'
+    $manifest = [ordered]@{
+        apesVersion = $apesVersion
+        createdAt   = (Get-Date).ToString('o')
+        scope       = $Scope
+        entries     = $backupRecords
+    } | ConvertTo-Json -Depth 5
+    Set-Content -LiteralPath $manifestPath -Value $manifest -Encoding UTF8
+    Write-Host "Đã backup $($backupRecords.Count) file. Khôi phục: $backupRoot" -ForegroundColor Yellow
+    Write-Host "Manifest ánh xạ file gốc -> bản backup: $manifestPath" -ForegroundColor Yellow
+} else {
+    Write-Host 'Không có file nào bị ghi đè, nên không tạo backup.' -ForegroundColor Green
+}
 Write-Host 'Tiếp theo: reload Antigravity, kiểm tra Rules/Skills/Agents trong Customizations, rồi yêu cầu apes-orchestrator bootstrap dự án.'

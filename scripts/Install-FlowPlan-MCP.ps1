@@ -9,6 +9,21 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+function Test-SameEndpoint([string]$Left, [string]$Right) {
+    # Compare what actually identifies the endpoint, not the literal string, so that
+    # localhost and 127.0.0.1 are treated as the same local server.
+    $leftUri = $null
+    $rightUri = $null
+    if (-not [Uri]::TryCreate($Left, [UriKind]::Absolute, [ref]$leftUri)) { return $false }
+    if (-not [Uri]::TryCreate($Right, [UriKind]::Absolute, [ref]$rightUri)) { return $false }
+    $leftHost = if ($leftUri.Host -eq 'localhost') { '127.0.0.1' } else { $leftUri.Host }
+    $rightHost = if ($rightUri.Host -eq 'localhost') { '127.0.0.1' } else { $rightUri.Host }
+    return ($leftUri.Scheme -eq $rightUri.Scheme) -and
+           ($leftHost -eq $rightHost) -and
+           ($leftUri.Port -eq $rightUri.Port) -and
+           ($leftUri.AbsolutePath.TrimEnd('/') -eq $rightUri.AbsolutePath.TrimEnd('/'))
+}
+
 function Get-ConfigTargets {
     $targets = [System.Collections.Generic.List[object]]::new()
     if ($Scope -in @('Global','All')) {
@@ -117,7 +132,7 @@ foreach ($target in $targets) {
         $existingUrlProperty = $existing.Value.PSObject.Properties['serverUrl']
         $existingUrl = if ($null -ne $existingUrlProperty) { [string]$existingUrlProperty.Value } else { '' }
 
-        if ($existingUrl -eq $ServerUrl) {
+        if (Test-SameEndpoint $existingUrl $ServerUrl) {
             $needsWrite = $false
             Write-Host "UNCHANGED $($target.Name): FlowPlan entry already matches." -ForegroundColor Green
         } elseif (-not $ReplaceExisting) {

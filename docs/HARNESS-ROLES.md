@@ -23,3 +23,5 @@ APES defines 17 reusable roles as Skills. These are analytical responsibilities,
 | Harness Evaluator | Independent evidence-based milestone evaluation |
 
 Only route roles relevant to the task. Do not force all 17 roles into a small project.
+
+These role skills install to the workspace only (`.agents/skills/role-*`). `Install-APES.ps1 -Scope Global` intentionally leaves them out: they are per-project reference material, not machine-wide policy.

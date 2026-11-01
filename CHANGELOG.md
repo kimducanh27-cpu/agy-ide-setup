@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — Validator hardening
+- Compare the installed workspace version against the repository `VERSION` using `.agents/apes-install.json`, so a stale install fails with a reinstall instruction instead of drifting silently.
+- Validate rule metadata for installed global rules when `-CheckGlobal` is used; previously only workspace rules were checked.
+- Add a global/workspace sync check that requires byte-identical copies except for the five files whose global variants intentionally point back at the workspace.
+- Compare FlowPlan MCP endpoints by parsed scheme, host, port and path, so `localhost` and `127.0.0.1` are no longer reported as conflicting entries.
+- Write `backup-manifest.json` beside each backup set, mapping the original path to the flattened backup file; stop printing a backup location when nothing was overwritten.
+- Document that the 17 `role-*` skills install to the workspace only, and run engine CI when `templates/prompts/**` changes.
+
 ## Unreleased — Documentation reference integrity and real pre-code gate
 - Fix nine copy-paste-broken commands in `docs/PROMPT-WORKFLOW-ENGINE-V3.md` and `templates/prompts/APES-3.0-EXAMPLE-VI.md` where `.\scripts\` had lost its backslash and rendered as `.scripts`.
 - Install every top-level `docs/*.md` into the workspace instead of a hardcoded pair, so `PROMPT-WORKFLOW-ENGINE-V3.md` is present where the Orchestrator and workflow-engine skill tell the agent to read it.

@@ -65,10 +65,12 @@ $project = "D:\Projects\MyApp"
 | Hạng mục | Global | Workspace |
 |---|---|---|
 | Base instructions | ~/.gemini/config/AGENTS.md | .agents/AGENTS.md |
-| Rules | ~/.gemini/config/rules/ | .agents/rules/ |
-| Skills | ~/.gemini/config/skills/ | .agents/skills/ |
+| Rules | ~/.gemini/config/rules/ (7) | .agents/rules/ (7) |
+| Skills | ~/.gemini/config/skills/ (10 APES skills) | .agents/skills/ (10 APES + 17 role skills) |
 | Custom Agents | ~/.gemini/config/agents/*.md | .agents/agents/*.md |
-| Engineering docs | — | docs/engineering/apes/ |
+| Engineering docs | — | docs/engineering/apes/ (toàn bộ docs/*.md) |
+
+17 `role-*` skill chỉ cài ở workspace. Chúng là tài liệu tham chiếu theo vai trò cho từng dự án, không phải nguyên tắc chung toàn máy; `Scope Global` cố ý không đưa chúng lên `~/.gemini/config/skills/`.
 
 ## Custom Agents
 
@@ -156,6 +158,8 @@ Không code sản phẩm trước khi người dùng duyệt brief, kiến trúc
 ~~~
 
 `-Stage PreCode` không chỉ kiểm tra file tồn tại: nó yêu cầu `00-project-brief.md` đã điền `Problem / opportunity`, `Project name`, `Target users`, `Acceptance criteria` và `02-architecture.md` đã có `Proposed stack`. Installer copy template rỗng vào đúng các đường dẫn đó, nên nếu chỉ kiểm tra sự tồn tại thì gate sẽ PASS ngay sau khi cài mà chưa có kế hoạch thật.
+
+Khi truyền `-ProjectPath`, validator còn đối chiếu `version` trong `.agents/apes-install.json` với `VERSION` của repo. Cài lệch bản sẽ FAIL kèm hướng dẫn cài lại, thay vì để workspace cũ chạy âm thầm với rule/skill đã đổi.
 
 GitHub Actions chạy validator và smoke test cài đặt vào workspace tạm trên Windows, gồm cả hai chiều của gate: template rỗng phải bị từ chối, brief đã điền phải được chấp nhận. PASS chỉ xác nhận metadata/đường dẫn/copy và cú pháp PowerShell, không chứng nhận chất lượng ứng dụng hoặc khả năng thực thi subagent trên máy thật.
 
