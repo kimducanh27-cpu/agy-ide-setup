@@ -38,22 +38,27 @@ Do not mix transcript paths, runtime fixtures, or compatibility claims between t
 - APES has one primary Orchestrator and eight specialist workers.
 - File presence is not proof of runtime discovery or successful invocation. Smoke-test the target surface and report evidence.
 
-## Surface matrix — APES does not behave the same everywhere
+## Tool availability differs by agent, not just by surface
 
-Google's custom-subagent page opens with **"Available on: Antigravity App, Antigravity CLI"**. The IDE is not listed, and a live IDE session confirmed it: the runtime tool list contained no `invoke_subagent`.
+**Correction.** An earlier revision of this section claimed the IDE has no `invoke_subagent` and that delegation is App/CLI only. That was wrong. Measured on the same IDE, same window, minutes apart:
 
-| Capability | App | CLI | IDE |
-|---|:--:|:--:|:--:|
-| Rules (`rules/*.md`, `AGENTS.md`) | ✅ | ✅ | ✅ verified in session |
-| Skills (`skills/*/SKILL.md`) | ✅ | ✅ | ✅ |
-| Custom agents as **primary** agent | ✅ | ✅ | ✅ |
-| **Delegation** (`invoke_subagent`, 9-agent fan-out) | ✅ | ✅ | ❌ **not available** |
+| Agent running | Has `invoke_subagent` | Tool count |
+|---|:--:|:--:|
+| **Main Agent** (default) | ✅ **yes** | 17 |
+| `apes-orchestrator` (custom) | ❌ no | 10 |
 
-**What this means for APES.** The nine-agent design assumes delegation exists. In the IDE it does not, so `apes-orchestrator` runs as a single agent: it can read files, search the web, schedule and call MCP tools, but it cannot hand work to `apes-project-analyst`, `apes-qa-engineer` or the other seven. Those agents remain selectable as the primary agent, but the fan-out described in `docs/HARNESS-ROLES.md` only happens on App or CLI.
+So the IDE *does* support delegation. The custom agent is the one missing the tool.
 
-**Tool namespaces differ per surface.** The IDE session reported `send_message`, `view_file`, `read_url_content`, `search_web`, `schedule`, `generate_image`, `call_mcp_tool`, `list_resources`, `read_resource`, `manage_task`. Note that `grep_search`, `find_by_name` and `run_command` — declared in six worker agents and used in the official docs example — were **absent** there. Do not assume a tool name valid on one surface exists on another; enumerate the runtime tools before relying on them.
+**Tool lists observed.**
 
-**Practical guidance.** Run APES workflows with delegation on the App or CLI. On the IDE, use APES for its rules and skills and drive one agent at a time.
+- Main Agent: `ask_question`, `call_mcp_tool`, `define_subagent`, `edit_file`, `invoke_subagent`, `list_plugin_accounts`, `list_resources`, `manage_subagents`, `manage_task`, `read_file`, `read_resource`, `run_command`, `schedule`, `search_marketplace`, `search_web`, `send_message`, `write_file`
+- `apes-orchestrator`: `send_message`, `view_file`, `read_url_content`, `search_web`, `schedule`, `generate_image`, `call_mcp_tool`, `list_resources`, `read_resource`, `manage_task`
+
+Two different namespaces. The default agent has `read_file`, the custom agent has `view_file`; the default has `run_command`, `edit_file` and `write_file`, the custom agent has none of them.
+
+**What is not yet known.** `apes-orchestrator` declares no `tools:` block, and the docs list its default as `[]`. Whether an explicit `tools:` list that includes `invoke_subagent` restores delegation for a custom agent is **untested**. Until someone runs that test, do not claim either way.
+
+**Practical guidance.** On the IDE, APES rules and skills load and the orchestrator works as a single agent. If you need the nine-agent fan-out and have not verified the `tools:` workaround, use the App or CLI.
 
 ## Metadata validation APES enforces
 

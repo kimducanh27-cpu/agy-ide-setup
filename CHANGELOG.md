@@ -1,10 +1,10 @@
 # Changelog
 
-## Unreleased — Surface matrix and verified rule loading
-- Document that custom-agent delegation is **App and CLI only**. Google's subagent page opens with "Available on: Antigravity App, Antigravity CLI"; a live IDE session confirmed the runtime exposes no `invoke_subagent`. On the IDE, `apes-orchestrator` runs as a single agent and cannot hand work to the eight workers.
-- Add a surface matrix to `docs/ANTIGRAVITY-COMPATIBILITY.md` and a warning in the README, so nobody expects the nine-agent fan-out on a surface that does not support it.
-- Record that tool namespaces differ per surface: the IDE session reported `send_message`, `call_mcp_tool`, `manage_task` and others, while `grep_search`, `find_by_name` and `run_command` — declared in six workers and used in the official docs example — were absent. Enumerate runtime tools before depending on a name.
-- First runtime evidence that rules load: an IDE session quoted `<RULE[...\.agents\rules\apes-core.md]>` and listed the conditional rules with their descriptions, including the `description` text added for `apes-workflow-engine` and `apes-impeccable-routing`. That confirms the model_decision fix from #6 works at runtime, not just in the validator.
+## Unreleased — Tool availability by agent, and verified rule loading
+- **Correction of a claim made earlier in this branch:** the IDE *does* support delegation. Measured on the same IDE window minutes apart, the Main Agent exposes 17 tools including `invoke_subagent`, while `apes-orchestrator` exposes 10 and has no `invoke_subagent`. The difference is the agent, not the surface. The earlier "App and CLI only" conclusion was an over-generalisation from a single custom agent.
+- Document the two observed tool lists and the fact that they are different namespaces: the default agent has `read_file`, `run_command`, `edit_file`, `write_file`; the custom agent has `view_file` but none of those.
+- Record what remains untested: whether an explicit `tools:` list containing `invoke_subagent` restores delegation for a custom agent. `apes-orchestrator` currently declares no `tools:` block.
+- Record the first runtime evidence that rules load: an IDE session quoted `<RULE[...\.agents\rules\apes-core.md]>` and listed the conditional rules with their descriptions, including the exact text added for `apes-workflow-engine` and `apes-impeccable-routing`. The model_decision fix from #6 works at runtime, not just in the validator.
 
 ## Unreleased — Antigravity metadata correctness
 - Add `description` to `apes-impeccable-routing` and `apes-workflow-engine` in both workspace and global scope. `description` is required for `trigger: model_decision`; without it the rule has nothing to put in the prompt index and never activates.
