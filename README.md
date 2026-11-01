@@ -112,6 +112,20 @@ Sau khi cài, reload Antigravity rồi dùng /impeccable init cho product contex
 
 **Giới hạn:** bản Antigravity được cài bằng skill payload. Không bật lifecycle hook tự động cho Antigravity; không tuyên bố detector tự chạy sau mỗi lần sửa file. Chi tiết: docs/IMPECCABLE-INTEGRATION.md.
 
+## Tích hợp tùy chọn: mattpocock/skills
+
+[mattpocock/skills](https://github.com/mattpocock/skills) là 39 skill từ `.agents` thật của Matt Pocock. APES không vendor bộ này — cài riêng, license riêng (MIT), cập nhật độc lập, cùng nguyên tắc với Impeccable.
+
+~~~powershell
+# 27 skill ổn định (engineering + productivity)
+.\scripts\Install-MattSkills.ps1 -Scope Project -ProjectPath (Get-Location).Path
+.\scripts\Test-MattSkills.ps1 -Scope Project -ProjectPath (Get-Location).Path
+~~~
+
+`-Set All` cài cả 39, gồm 8 skill `in-progress/` chưa xong và 4 skill `misc/` mà upstream tự gọi là *"frozen and unmaintained"*. Mặc định bỏ cả hai nhóm.
+
+Ba skill — `code-review`, `implement-spec`, `research` — cần **subagent thật**; trên runtime không có `invoke_subagent` chúng thoái hoá thành chạy tuần tự. Không trùng tên với skill APES (`apes-*`, `role-*`). Chi tiết: [docs/MATT-SKILLS-INTEGRATION.md](docs/MATT-SKILLS-INTEGRATION.md).
+
 ## Tích hợp tùy chọn: FlowPlan Windows
 
 Dùng [FlowPlan Windows](https://github.com/kimducanh27-cpu/flowplan-windows) làm bảng task trực quan cho APES. Đây là community build portable, không phải upstream official release; APES không tự tải/cài/chạy ứng dụng.
