@@ -86,6 +86,15 @@ Do not mix transcript paths, runtime fixtures, or compatibility claims between t
 - CLI-only commands are not prerequisites for Desktop App/IDE.
 - Do not claim an agent or subagent ran unless a separate runtime invocation/result is observed.
 
+## Tool semantics that are easy to get wrong
+
+Measured on Antigravity IDE 2.28.2 by reading each tool's live schema, then exercising it and reading the state back.
+
+- **`manage_task` does not create tasks.** Its only actions are `list`, `kill`, `status`, `send_input`, and it operates on *background tasks* (a running `schedule` timer, a long command), not on a to-do list. The name misleads: an agent asked to "create a task" with this tool will either call `list` and report success, or fail. Do not use it as a work-item tracker.
+- **`schedule` is cancellable, and only through `manage_task`.** `DurationSeconds` gives a one-shot timer, `CronExpression` a recurring job. Creation returns a task id of the form `<cascade-id>/task-<n>`; `manage_task(Action='kill', TaskId=...)` cancels it and leaves only an empty log file under `brain/<cascade>/.system_generated/tasks/`. Prefer a one-shot timer over a cron job when testing, so a forgotten schedule cannot fire repeatedly.
+- **`define_subagent` is session-scoped.** It registers a subagent *type* in memory for the lifetime of the conversation; it writes no file and there is no `undefine_subagent`. Closing the conversation discards it. Do not expect a defined subagent to survive a reload.
+- **`send_message` is inter-agent only.** It addresses another agent by `ConversationId`; it is not a way to message the user. It is nevertheless a real, working tool — a subagent uses it to return its result to the parent.
+
 ## Official references
 
 - https://antigravity.google/docs/rules/
