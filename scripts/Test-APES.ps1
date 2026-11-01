@@ -9,22 +9,28 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $failures = [System.Collections.Generic.List[string]]::new()
 $checks = 0
 $expectedAgentCount = 9
-# Tool names Antigravity actually resolves. Derived from two sources, not from guesswork:
+# Tool names Antigravity actually resolves for a custom agent's `tools:` block.
+# Derived from runtime evidence, not from guesswork:
 #   1. every `allowed_tools: "<name>"` literal inside resources/bin/language_server.exe
 #   2. names used in the binary's own agent instructions and in the official custom-agent example
-# An earlier revision of this list dropped find_by_name because the public docs never showed it;
-# the binary proves it is real (priority 2 in Antigravity's own search guidance), so absence from
-# the docs is not evidence that a name is invalid.
+#   3. the component list recorded in executor_metadata of a successfully constructed executor
+#      (~/.gemini/antigravity/conversations/<cascade>.db) — this is the authoritative set
+# An earlier revision dropped find_by_name because the public docs never showed it; the binary
+# proves it is real, so absence from the docs is not evidence that a name is invalid.
+# list_resources was REMOVED: declaring it produced
+#   `unknown component: tool "list_resources" not found in registry`
+# and the executor failed to construct. A name that kills the agent must not pass validation.
 $knownTools = @(
     'view_file', 'replace_file_content', 'multi_replace_file_content', 'grep_search',
-    'find_by_name', 'find_file', 'run_command', 'write_to_file', 'read_file',
+    'find_by_name', 'find_file', 'run_command', 'write_to_file', 'write_file', 'read_file',
     'list_dir', 'list_directory', 'search_directory', 'create_file', 'edit_file',
     'search_in_file', 'command_status', 'search_web', 'read_url_content',
-    'invoke_subagent', 'define_subagent', 'ask_question', 'generate_image', 'finish',
+    'invoke_subagent', 'define_subagent', 'manage_subagents', 'manage_task', 'send_message',
+    'ask_question', 'generate_image', 'finish',
     'browser_get_dom', 'browser_get_network_request', 'browser_list_network_requests',
     'capture_browser_console_logs', 'capture_browser_screenshot', 'list_browser_pages',
     'read_browser_page', 'read_terminal', 'view_content_chunk', 'wait', 'schedule',
-    'list_permissions', 'list_resources', 'list_plugin_accounts', 'manage_inbox',
+    'list_permissions', 'list_plugin_accounts', 'manage_inbox',
     'notify_user', 'task_boundary', 'trajectory_search', 'search_marketplace'
 )
 
@@ -107,9 +113,12 @@ function Test-AgentFile([string]$Path) {
     }
     $validInvokeSubagent = $true
     if ($expectedName -eq 'apes-orchestrator') {
-        # Orchestrator omits tools to inherit runtime default capabilities including native invoke_subagent
-        $validInvokeSubagent = -not $toolSection.Success
-        if (-not $validInvokeSubagent) { $script:failures.Add("Orchestrator must omit tools to retain runtime default delegation capabilities: $Path") }
+        # Omitting tools: does NOT inherit delegation. A custom agent without a tools: block gets
+        # a fixed baseline of six tools that excludes invoke_subagent, so the orchestrator silently
+        # loses the ability to delegate. It must declare invoke_subagent explicitly.
+        $validInvokeSubagent = $toolSection.Success -and
+            ($toolSection.Groups['items'].Value -match '(?m)^[ \t]*-[ \t]*invoke_subagent[ \t]*\r?$')
+        if (-not $validInvokeSubagent) { $script:failures.Add("Orchestrator must declare invoke_subagent in tools: — the default baseline of six tools excludes it: $Path") }
     }
     if ($validName -and $validDescription -and $validSubagent -and $validMainAgent -and $validModel -and $validPolicy -and $validTools -and $validInvokeSubagent) {
         Write-Host "PASS  Custom Agent metadata: $Path" -ForegroundColor Green

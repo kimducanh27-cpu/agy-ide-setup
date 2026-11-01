@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased — Orchestrator declares its tools explicitly
+
+- `apes-orchestrator` now declares a 17-tool allowlist instead of omitting `tools:`.
+- **Correction:** the previous claim that omitting `tools:` "inherits runtime defaults including invoke_subagent" was wrong. Measured on Antigravity IDE 2.28.2: a custom agent with no `tools:` block is constructed with a fixed six-tool baseline (`send_message`, `view_file`, `read_url_content`, `search_web`, `schedule`, `generate_image`) and **no** `invoke_subagent`. The Orchestrator was therefore unable to delegate at all, which is the opposite of what the docs promised.
+- `tools:` **replaces** the baseline rather than extending it. Declaring a list grants and withholds at the same time — the earlier "omit to inherit" advice silently removed delegation while appearing to preserve it.
+- `Test-APES.ps1` inverts the rule: it now fails an Orchestrator that *omits* `invoke_subagent`, instead of failing one that declares `tools:`.
+- Remove `list_resources` from the tool allowlist. Declaring it produced `unknown component: tool "list_resources" not found in registry` and the executor failed to construct; a name that kills the agent must not pass validation. Add `write_file`, `manage_task`, `send_message`, `manage_subagents`, which were missing and would have failed valid agents.
+- Document the real failure mode in `docs/ANTIGRAVITY-COMPATIBILITY.md`: an unmapped tool name kills executor construction rather than hanging it, and the error names every offending component at once.
+- Record `executor_metadata` (`~/.gemini/antigravity/conversations/<cascade>.db`) as the authoritative source for the tools an agent actually received, replacing self-report as the verification method.
+
 ## Unreleased — Antigravity metadata correctness
 - Add `description` to `apes-impeccable-routing` and `apes-workflow-engine` in both workspace and global scope. `description` is required for `trigger: model_decision`; without it the rule has nothing to put in the prompt index and never activates.
 - Validate global rules at repository level too, not only after installation, and require `description` for `model_decision` and `globs` for `glob`.

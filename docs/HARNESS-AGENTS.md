@@ -22,7 +22,9 @@ Antigravity 2.0 Desktop App supports workspace and global Custom Agents through 
 
 APES uses documented fields: name, description, mainAgent, subagent, model, commandExecutionPolicy, and tools where an explicit allowlist is appropriate.
 
-Reviewers use documented read-only tools. QA additionally receives run_command to execute checks. Implementation/Orchestrator omit tools to use runtime defaults and retain the sandbox command policy.
+Reviewers use documented read-only tools. QA additionally receives run_command to execute checks.
+
+The Orchestrator declares an explicit 17-tool allowlist, including invoke_subagent. It cannot omit `tools:` and inherit delegation: a custom agent with no `tools:` block receives a fixed six-tool baseline (send_message, view_file, read_url_content, search_web, schedule, generate_image) that excludes invoke_subagent, so the Orchestrator silently loses the ability to delegate. `tools:` replaces the baseline rather than extending it — declaring a list both grants and withholds capabilities.
 
 ## Verify in Antigravity 2.0 Desktop App / IDE
 
