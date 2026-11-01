@@ -51,6 +51,20 @@ function Install-Global {
         }
     }
     Install-MarkdownAgents (Join-Path $repoRoot '.agents\agents') (Join-Path $globalRoot 'agents')
+    # Global installs need the same version marker as workspace installs, otherwise a stale
+    # machine-wide install can never be detected.
+    $globalMarker = Join-Path $globalRoot 'apes-install.json'
+    $globalMarkerContent = [ordered]@{
+        version     = $apesVersion
+        installedAt = (Get-Date).ToString('o')
+        source      = 'https://github.com/kimducanh27-cpu/agy-ide-setup'
+        scope       = 'Global'
+        customAgents = 9
+    } | ConvertTo-Json
+    $globalMarkerTemp = Join-Path $env:TEMP ('apes-marker-' + [guid]::NewGuid().ToString('N') + '.json')
+    Set-Content -LiteralPath $globalMarkerTemp -Value $globalMarkerContent -Encoding UTF8
+    Copy-NamespaceFile $globalMarkerTemp $globalMarker
+    Remove-Item -LiteralPath $globalMarkerTemp -Force
 }
 function Install-Project {
     if (-not (Test-Path -LiteralPath $ProjectPath -PathType Container)) { throw "Không tìm thấy thư mục dự án: $ProjectPath" }

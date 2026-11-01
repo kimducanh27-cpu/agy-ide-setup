@@ -73,3 +73,17 @@ jobs:
           if (Test-Path (Join-Path $sandbox 'target.md')) { throw 'Restore wrote a file despite the failed preflight.' }
           Write-Host 'Restore correctly refused to act.'
           exit 0
+      - name: Global install writes a version marker
+        shell: pwsh
+        run: |
+          # The runner is disposable, so a real global install is safe here and is the only
+          # way to prove Install-Global writes the marker and -CheckGlobal reads it.
+          ./scripts/Install-APES.ps1 -Scope Global
+          $marker = Join-Path $HOME '.gemini/config/apes-install.json'
+          if (-not (Test-Path -LiteralPath $marker)) { throw 'Global install did not write apes-install.json.' }
+          $parsed = Get-Content -LiteralPath $marker -Raw | ConvertFrom-Json
+          $expected = (Get-Content ./VERSION -Raw).Trim()
+          if ($parsed.version -ne $expected) { throw "Global marker has $($parsed.version), expected $expected." }
+          if ($parsed.scope -ne 'Global') { throw "Global marker scope is '$($parsed.scope)', expected 'Global'." }
+          Write-Host "Global marker OK: $($parsed.version)"
+          ./scripts/Test-APES.ps1 -CheckGlobal

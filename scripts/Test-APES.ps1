@@ -388,6 +388,27 @@ if ($CheckGlobal) {
     foreach ($file in $repoAgents) {
         Test-RequiredPath (Join-Path $globalRoot ('agents/' + $file.Name)) "Global agent $($file.BaseName)"
     }
+    # A global install without a marker predates version tracking; report it without failing,
+    # because reinstalling once is all it takes to become tracked.
+    $globalMarkerPath = Join-Path $globalRoot 'apes-install.json'
+    $script:checks++
+    if (-not (Test-Path -LiteralPath $globalMarkerPath -PathType Leaf)) {
+        Write-Host 'PASS  Global install predates version tracking; reinstall to start tracking' -ForegroundColor Yellow
+    } else {
+        try {
+            $globalVersion = [string](Get-Content -LiteralPath $globalMarkerPath -Raw | ConvertFrom-Json).version
+            $repoVersion = (Get-Content (Join-Path $repoRoot 'VERSION') -Raw).Trim()
+            if ($globalVersion -eq $repoVersion) {
+                Write-Host "PASS  Global install version matches repository ($repoVersion)" -ForegroundColor Green
+            } else {
+                Write-Host "FAIL  Global install has APES $globalVersion but repository is $repoVersion; reinstall" -ForegroundColor Red
+                $failures.Add("Global version mismatch: $globalVersion vs $repoVersion; reinstall APES -Scope Global")
+            }
+        } catch {
+            Write-Host 'FAIL  Global install marker is not valid JSON; reinstall' -ForegroundColor Red
+            $failures.Add('Global install marker is not valid JSON')
+        }
+    }
 }
 if ($ProjectPath) {
     $project = (Resolve-Path -LiteralPath $ProjectPath).Path
