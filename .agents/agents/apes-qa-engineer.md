@@ -8,6 +8,7 @@ model: flash
 commandExecutionPolicy: sandbox
 tools:
   - view_file
+  - read_file
   - grep_search
   - find_by_name
   - run_command

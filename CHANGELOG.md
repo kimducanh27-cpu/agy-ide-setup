@@ -3,7 +3,7 @@
 ## Unreleased — Text integrity
 
 - Remove an invisible **backspace byte (0x08)** from `.agents/rules/apes-core.md`. It sat between `ý` and `rõ`, so the sentence rendered as `đồng ýrõ ràng` and looked like a missing space. It was a control character.
-- Remove **U+1EFA (LATIN CAPITAL LETTER MIDDLE-WELSH LL)** from `.agents/skills/apes-milestone-delivery/SKILL.md`, where it had replaced the end of a word (`báo trỺ.`), and restore the missing space in `tuần thựvà` → `tuần tự và`.
+- Remove **U+1EFA (LATIN CAPITAL LETTER MIDDLE-WELSH LL)** from `.agents/skills/apes-milestone-delivery/SKILL.md`, where it had replaced the end of a word (`báo tr<U+1EFA>.`), and restore the missing space in `tuần thựvà` → `tuần tự và`.
 - Fix `bái học` → `bài học` in `global/skills/apes-milestone-delivery/SKILL.md`.
 - Why the existing checks missed all of this: the five files that differ between `global/` and `.agents/` are exempt from the byte-equality check, and these defects were all inside that exempt set. The `global/` twin of each file was clean, which is exactly what the equality check would have flagged if the file had not been exempt.
 - Add a mechanical **text integrity** check to the validator: control characters and non-Vietnamese glyphs in the Latin Extended Additional block now fail CI, in every `.md`, `.json`, `.ps1` and `.yml` file. Neither defect is visible in a diff, so a human reviewer cannot catch this class — verified by injecting both and watching the check fail.

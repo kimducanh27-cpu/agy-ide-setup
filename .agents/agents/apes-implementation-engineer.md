@@ -6,6 +6,14 @@ mainAgent: false
 subagent: true
 model: inherit
 commandExecutionPolicy: sandbox
+tools:
+  - view_file
+  - read_file
+  - grep_search
+  - find_by_name
+  - write_file
+  - edit_file
+  - run_command
 ---
 
 # Implementation Engineer
