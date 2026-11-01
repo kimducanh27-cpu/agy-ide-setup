@@ -44,3 +44,32 @@ jobs:
             -replace '(?m)^- Proposed stack:[ \t]*\r?$', '- Proposed stack: PowerShell 5.1' |
             Set-Content -LiteralPath $arch -Encoding UTF8
           ./scripts/Test-APES.ps1 -ProjectPath $target -Stage PreCode
+      - name: Backup manifest is written and restore dry-run succeeds
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'apes-smoke-workspace'
+          # A second install overwrites existing files, so it must record a manifest.
+          ./scripts/Install-APES.ps1 -Scope Project -ProjectPath $target
+          $manifest = Get-ChildItem (Join-Path $env:LOCALAPPDATA 'APES/backups') -Recurse -Filter 'backup-manifest.json' -File |
+            Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $manifest) { throw 'Second install did not write backup-manifest.json.' }
+          $parsed = Get-Content -LiteralPath $manifest.FullName -Raw | ConvertFrom-Json
+          $entryCount = @($parsed.entries).Count
+          if ($entryCount -lt 1) { throw "Backup manifest has no entries: $($manifest.FullName)" }
+          Write-Host "Manifest entries: $entryCount"
+          ./scripts/Restore-APES.ps1 -BackupPath $manifest.Directory.FullName -DryRun
+      - name: Restore aborts when a backup file is missing
+        shell: pwsh
+        run: |
+          $sandbox = Join-Path $env:RUNNER_TEMP 'apes-restore-negative'
+          New-Item -ItemType Directory -Force -Path $sandbox | Out-Null
+          $fake = @{
+            apesVersion = '3.0.0'; scope = 'Project'; createdAt = (Get-Date).ToString('o')
+            entries = @(@{ original = (Join-Path $sandbox 'target.md'); backup = (Join-Path $sandbox 'missing.md') })
+          } | ConvertTo-Json -Depth 5
+          Set-Content -LiteralPath (Join-Path $sandbox 'backup-manifest.json') -Value $fake -Encoding UTF8
+          ./scripts/Restore-APES.ps1 -BackupPath $sandbox -Force
+          if ($LASTEXITCODE -ne 1) { throw 'Restore did not abort on a missing backup file.' }
+          if (Test-Path (Join-Path $sandbox 'target.md')) { throw 'Restore wrote a file despite the failed preflight.' }
+          Write-Host 'Restore correctly refused to act.'
+          exit 0

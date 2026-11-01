@@ -180,7 +180,26 @@ APES không tự cài MCP server hoặc hooks tuỳ tiện. MCP có thể cần 
 - Không cần quyền Administrator.
 - Installer APES cơ bản không tải/chạy mã ngoài.
 - Installer Impeccable là opt-in riêng: tải archive của tag upstream đã chọn, chỉ sao chép skill Antigravity và backup thư mục Impeccable cũ trước khi thay thế; không thực thi script trong lúc cài.
-- Không xóa file hiện có; file APES cùng tên được backup tại %LOCALAPPDATA%\APES\backups\.
+- Không xóa file hiện có; file APES cùng tên được backup tại %LOCALAPPDATA%\APES\backups\ kèm `backup-manifest.json` ánh xạ đường dẫn gốc sang file backup.
+
+## Khôi phục sau khi cài đè
+
+Mỗi lần cài ghi đè file đã tồn tại, installer ghi thêm `backup-manifest.json` vào thư mục backup. Script restore đọc manifest đó và **mặc định chỉ xem trước**:
+
+~~~powershell
+# Xem trước, không ghi gì (dùng backup mới nhất)
+.\scripts\Restore-APES.ps1 -DryRun
+
+# Khôi phục thật từ một thư mục backup cụ thể
+.\scripts\Restore-APES.ps1 -BackupPath "$env:LOCALAPPDATA\APES\backups\20261101-143828" -Force
+
+# Chỉ khôi phục các file khớp chuỗi
+.\scripts\Restore-APES.ps1 -BackupPath "<dir>" -Force -Only 'apes-core','AGENTS.md'
+~~~
+
+Trước khi ghi, script kiểm tra **tất cả** file backup có mặt; thiếu một file là hủy toàn bộ, không ghi gì. Trạng thái hiện tại được giữ lại ở `restore-safety-<timestamp>` trước khi bị ghi đè, nên có thể hoàn tác bằng cách chạy lại chính script với `-BackupPath` trỏ vào thư mục đó.
+
+Backup tạo trước APES 3.0 không có manifest nên không khôi phục tự động được; script báo rõ thay vì đoán.
 - Không commit secrets hoặc dữ liệu cá nhân.
 - Không tự deploy production, chi tiêu, tạo cloud resource hoặc thay đổi dữ liệu thật.
 

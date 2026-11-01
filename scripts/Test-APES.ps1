@@ -100,6 +100,7 @@ foreach ($item in @(
     @('START_HERE_FOR_AI_VI.md','AI setup guide'),
     @('NOTICE.md','Attribution notice'),
     @('scripts/Install-APES.ps1','APES installer'),
+    @('scripts/Restore-APES.ps1','APES backup restore helper'),
     @('scripts/Install-Impeccable.ps1','Optional Impeccable installer'),
     @('scripts/Test-Impeccable.ps1','Optional Impeccable validator'),
     @('docs/IMPECCABLE-INTEGRATION.md','Impeccable integration guide'),

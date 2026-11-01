@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased — Restore from backup
+- Add `scripts/Restore-APES.ps1`, which reads the `backup-manifest.json` written by the installer and restores overwritten files. It previews by default and only writes with `-Force`.
+- Preflight checks every backup file before touching anything: one missing file aborts the whole run with no changes.
+- Before overwriting, the current state is copied to `restore-safety-<timestamp>` with its own manifest, so a restore can itself be undone by pointing the same script at that directory.
+- Support `-Only` to restore a subset, and `-BackupPath` to target a specific backup set instead of the newest one.
+- Abort paths use `exit 1` rather than `throw`, because a throw leaves `$LASTEXITCODE` untouched and an automated caller would read the failure as success.
+- Add restore coverage to CI: a second install must produce a manifest, dry-run must succeed, and a missing backup file must abort without writing.
+
 ## Unreleased — Validator hardening
 - Compare the installed workspace version against the repository `VERSION` using `.agents/apes-install.json`, so a stale install fails with a reinstall instruction instead of drifting silently.
 - Validate rule metadata for installed global rules when `-CheckGlobal` is used; previously only workspace rules were checked.
