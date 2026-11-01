@@ -1,11 +1,12 @@
 # Changelog
 
 ## Unreleased — Antigravity metadata correctness
-- Remove `find_by_name` from six custom agents. Google documents that an unmapped or misspelled tool name in `tools:` *"may cause the subagent process to hang during execution"*, and `find_by_name` appears in no official example or in the SDK `BuiltinTools` enum. The nearest documented name is `find_file`, which was deliberately not substituted without a live test.
-- Replace the validator's tool allowlist with the union of the custom-agent documentation example and the SDK `BuiltinTools` enum, so an undocumented name now fails instead of passing. The old allowlist contained `find_by_name`, which is why the validator reported 104/104 while six workers were at risk.
 - Add `description` to `apes-impeccable-routing` and `apes-workflow-engine` in both workspace and global scope. `description` is required for `trigger: model_decision`; without it the rule has nothing to put in the prompt index and never activates.
 - Validate global rules at repository level too, not only after installation, and require `description` for `model_decision` and `globs` for `glob`.
-- Document both rules in `docs/ANTIGRAVITY-COMPATIBILITY.md` with the official wording so the next contributor does not re-add an invented tool name.
+- Rebuild the validator's tool allowlist from the installed binary rather than from the public docs. `resources/bin/language_server.exe` contains every valid name as an `allowed_tools:` literal; the list now comes from that set plus the names the binary uses in its own agent instructions.
+- **Correction:** an earlier revision of this branch removed `find_by_name` from six agents because no public doc page showed it. That was wrong. The binary lists `find_by_name` as `allowed_tools` and ranks it second in Antigravity's own search guidance ("Locate files and directories by name"). It has been restored, and the changelog keeps the record so nobody repeats the mistake.
+- Note the asymmetry: absence from the public docs is not evidence that a tool name is invalid, but presence of a misspelled name is still a real hazard — Google warns an unmapped name "may cause the subagent process to hang during execution". Verify against the binary before removing anything.
+- Document both rules in `docs/ANTIGRAVITY-COMPATIBILITY.md` with the official wording.
 
 ## Unreleased — CI supply chain
 - Pin `actions/checkout` to commit `11d5960` (v4.4.0) in both workflows instead of the moving `@v4` tag. A tag can be repointed; a commit cannot.

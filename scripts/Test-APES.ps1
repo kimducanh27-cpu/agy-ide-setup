@@ -9,14 +9,23 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $failures = [System.Collections.Generic.List[string]]::new()
 $checks = 0
 $expectedAgentCount = 9
-# Tool names Antigravity documents for the `tools:` frontmatter: the four in the custom-agent
-# example plus the SDK BuiltinTools enum. Antigravity warns that an unmapped or misspelled tool
-# name "may cause the subagent process to hang during execution", so anything outside this
-# union must fail loudly instead of shipping.
+# Tool names Antigravity actually resolves. Derived from two sources, not from guesswork:
+#   1. every `allowed_tools: "<name>"` literal inside resources/bin/language_server.exe
+#   2. names used in the binary's own agent instructions and in the official custom-agent example
+# An earlier revision of this list dropped find_by_name because the public docs never showed it;
+# the binary proves it is real (priority 2 in Antigravity's own search guidance), so absence from
+# the docs is not evidence that a name is invalid.
 $knownTools = @(
-    'view_file', 'replace_file_content', 'grep_search', 'run_command',
-    'find_file', 'list_directory', 'search_directory', 'create_file', 'edit_file',
-    'ask_question', 'start_subagent', 'generate_image', 'search_web', 'read_url_content', 'finish'
+    'view_file', 'replace_file_content', 'multi_replace_file_content', 'grep_search',
+    'find_by_name', 'find_file', 'run_command', 'write_to_file', 'read_file',
+    'list_dir', 'list_directory', 'search_directory', 'create_file', 'edit_file',
+    'search_in_file', 'command_status', 'search_web', 'read_url_content',
+    'invoke_subagent', 'define_subagent', 'ask_question', 'generate_image', 'finish',
+    'browser_get_dom', 'browser_get_network_request', 'browser_list_network_requests',
+    'capture_browser_console_logs', 'capture_browser_screenshot', 'list_browser_pages',
+    'read_browser_page', 'read_terminal', 'view_content_chunk', 'wait', 'schedule',
+    'list_permissions', 'list_resources', 'list_plugin_accounts', 'manage_inbox',
+    'notify_user', 'task_boundary', 'trajectory_search', 'search_marketplace'
 )
 
 function Test-RequiredPath([string]$Path, [string]$Label) {
