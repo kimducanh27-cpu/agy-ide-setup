@@ -38,6 +38,28 @@ Do not mix transcript paths, runtime fixtures, or compatibility claims between t
 - APES has one primary Orchestrator and eight specialist workers.
 - File presence is not proof of runtime discovery or successful invocation. Smoke-test the target surface and report evidence.
 
+## Tool availability differs by agent, not just by surface
+
+**Correction.** An earlier revision of this section claimed the IDE has no `invoke_subagent` and that delegation is App/CLI only. That was wrong. Measured on the same IDE, same window, minutes apart:
+
+| Agent running | Has `invoke_subagent` | Tool count |
+|---|:--:|:--:|
+| **Main Agent** (default) | ✅ **yes** | 17 |
+| `apes-orchestrator` (custom) | ❌ no | 10 |
+
+So the IDE *does* support delegation. The custom agent is the one missing the tool.
+
+**Tool lists observed.**
+
+- Main Agent: `ask_question`, `call_mcp_tool`, `define_subagent`, `edit_file`, `invoke_subagent`, `list_plugin_accounts`, `list_resources`, `manage_subagents`, `manage_task`, `read_file`, `read_resource`, `run_command`, `schedule`, `search_marketplace`, `search_web`, `send_message`, `write_file`
+- `apes-orchestrator`: `send_message`, `view_file`, `read_url_content`, `search_web`, `schedule`, `generate_image`, `call_mcp_tool`, `list_resources`, `read_resource`, `manage_task`
+
+Two different namespaces. The default agent has `read_file`, the custom agent has `view_file`; the default has `run_command`, `edit_file` and `write_file`, the custom agent has none of them.
+
+**What is not yet known.** `apes-orchestrator` declares no `tools:` block, and the docs list its default as `[]`. Whether an explicit `tools:` list that includes `invoke_subagent` restores delegation for a custom agent is **untested**. Until someone runs that test, do not claim either way.
+
+**Practical guidance.** On the IDE, APES rules and skills load and the orchestrator works as a single agent. If you need the nine-agent fan-out and have not verified the `tools:` workaround, use the App or CLI.
+
 ## Metadata validation APES enforces
 
 `scripts/Test-APES.ps1` rejects metadata that Antigravity would silently mishandle. Both checks below exist because the failure mode is invisible at runtime.

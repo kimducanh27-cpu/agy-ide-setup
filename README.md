@@ -86,6 +86,8 @@ $project = "D:\Projects\MyApp"
 
 Chỉ Orchestrator có mainAgent: true. Cả chín agent đều khai báo subagent: true để Orchestrator có thể được gọi lồng khi cần; tám worker còn lại không thể chọn làm agent chính.
 
+> **Lưu ý — giao việc cho worker phụ thuộc agent, không chỉ surface.** Đo trên cùng một cửa sổ IDE: **Main Agent mặc định có `invoke_subagent`** (17 tool), còn `apes-orchestrator` **không có** (10 tool). Nên IDE không phải nguyên nhân — custom agent nhận bộ tool khác và bị thiếu `invoke_subagent`. Chưa kiểm chứng liệu khai báo `tools:` có `invoke_subagent` có khôi phục được hay không. Nếu bạn cần 9 agent chạy đúng thiết kế mà chưa test cách đó, dùng App hoặc CLI. Chi tiết: `docs/ANTIGRAVITY-COMPATIBILITY.md`.
+
 ## Tích hợp tùy chọn: Impeccable cho UI/UX
 
 APES và https://github.com/pbakaus/impeccable có nhiệm vụ riêng:
