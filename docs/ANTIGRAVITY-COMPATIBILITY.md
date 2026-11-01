@@ -38,6 +38,23 @@ Do not mix transcript paths, runtime fixtures, or compatibility claims between t
 - APES has one primary Orchestrator and eight specialist workers.
 - File presence is not proof of runtime discovery or successful invocation. Smoke-test the target surface and report evidence.
 
+## Surface matrix — APES does not behave the same everywhere
+
+Google's custom-subagent page opens with **"Available on: Antigravity App, Antigravity CLI"**. The IDE is not listed, and a live IDE session confirmed it: the runtime tool list contained no `invoke_subagent`.
+
+| Capability | App | CLI | IDE |
+|---|:--:|:--:|:--:|
+| Rules (`rules/*.md`, `AGENTS.md`) | ✅ | ✅ | ✅ verified in session |
+| Skills (`skills/*/SKILL.md`) | ✅ | ✅ | ✅ |
+| Custom agents as **primary** agent | ✅ | ✅ | ✅ |
+| **Delegation** (`invoke_subagent`, 9-agent fan-out) | ✅ | ✅ | ❌ **not available** |
+
+**What this means for APES.** The nine-agent design assumes delegation exists. In the IDE it does not, so `apes-orchestrator` runs as a single agent: it can read files, search the web, schedule and call MCP tools, but it cannot hand work to `apes-project-analyst`, `apes-qa-engineer` or the other seven. Those agents remain selectable as the primary agent, but the fan-out described in `docs/HARNESS-ROLES.md` only happens on App or CLI.
+
+**Tool namespaces differ per surface.** The IDE session reported `send_message`, `view_file`, `read_url_content`, `search_web`, `schedule`, `generate_image`, `call_mcp_tool`, `list_resources`, `read_resource`, `manage_task`. Note that `grep_search`, `find_by_name` and `run_command` — declared in six worker agents and used in the official docs example — were **absent** there. Do not assume a tool name valid on one surface exists on another; enumerate the runtime tools before relying on them.
+
+**Practical guidance.** Run APES workflows with delegation on the App or CLI. On the IDE, use APES for its rules and skills and drive one agent at a time.
+
 ## Metadata validation APES enforces
 
 `scripts/Test-APES.ps1` rejects metadata that Antigravity would silently mishandle. Both checks below exist because the failure mode is invisible at runtime.

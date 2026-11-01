@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — Surface matrix and verified rule loading
+- Document that custom-agent delegation is **App and CLI only**. Google's subagent page opens with "Available on: Antigravity App, Antigravity CLI"; a live IDE session confirmed the runtime exposes no `invoke_subagent`. On the IDE, `apes-orchestrator` runs as a single agent and cannot hand work to the eight workers.
+- Add a surface matrix to `docs/ANTIGRAVITY-COMPATIBILITY.md` and a warning in the README, so nobody expects the nine-agent fan-out on a surface that does not support it.
+- Record that tool namespaces differ per surface: the IDE session reported `send_message`, `call_mcp_tool`, `manage_task` and others, while `grep_search`, `find_by_name` and `run_command` — declared in six workers and used in the official docs example — were absent. Enumerate runtime tools before depending on a name.
+- First runtime evidence that rules load: an IDE session quoted `<RULE[...\.agents\rules\apes-core.md]>` and listed the conditional rules with their descriptions, including the `description` text added for `apes-workflow-engine` and `apes-impeccable-routing`. That confirms the model_decision fix from #6 works at runtime, not just in the validator.
+
 ## Unreleased — Antigravity metadata correctness
 - Add `description` to `apes-impeccable-routing` and `apes-workflow-engine` in both workspace and global scope. `description` is required for `trigger: model_decision`; without it the rule has nothing to put in the prompt index and never activates.
 - Validate global rules at repository level too, not only after installation, and require `description` for `model_decision` and `globs` for `glob`.

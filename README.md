@@ -86,6 +86,8 @@ $project = "D:\Projects\MyApp"
 
 Chỉ Orchestrator có mainAgent: true. Cả chín agent đều khai báo subagent: true để Orchestrator có thể được gọi lồng khi cần; tám worker còn lại không thể chọn làm agent chính.
 
+> **Quan trọng — giao việc cho worker chỉ chạy trên App và CLI.** Tài liệu Google ghi rõ custom subagent *"Available on: Antigravity App, Antigravity CLI"*. Antigravity **IDE không có** công cụ `invoke_subagent`, đã kiểm chứng trên một phiên IDE thật. Trên IDE, Orchestrator chạy như một agent đơn: nó đọc file, tìm web, gọi MCP được, nhưng **không giao được việc cho 8 worker**. Chi tiết và bảng so sánh từng surface: `docs/ANTIGRAVITY-COMPATIBILITY.md`.
+
 ## Tích hợp tùy chọn: Impeccable cho UI/UX
 
 APES và https://github.com/pbakaus/impeccable có nhiệm vụ riêng:
